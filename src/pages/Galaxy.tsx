@@ -84,13 +84,15 @@ export default function Galaxy() {
     setCurrentSystem(playerSystem);
   }, [playerGalaxy, playerSystem]);
 
-  // Animation loop for orbital mechanics
+  // Animation loop ONLY for system view orbital mechanics
   useEffect(() => {
+    if (viewLevel !== 'system') return;
+    
     const interval = setInterval(() => {
       setAnimationTime(prev => prev + 0.01);
     }, 50);
     return () => clearInterval(interval);
-  }, []);
+  }, [viewLevel]);
 
   // Zoom and pan controls
   useEffect(() => {
@@ -145,8 +147,8 @@ export default function Galaxy() {
       e.preventDefault();
       if (e.touches.length === 1 && isDragging) {
         setPanOffset({
-          x: e.touches[0].clientX - startX,
-          y: e.touches[0].clientY - startY
+          x: e.touches[0].clientX - dragStart.x,
+          y: e.touches[0].clientY - dragStart.y
         });
       } else if (e.touches.length === 2) {
         // Pinch to zoom
@@ -342,6 +344,11 @@ export default function Galaxy() {
     setCurrentSystem(playerSystem);
     setViewLevel('system');
     setSelectedPlanetPos(playerPosition);
+  };
+
+  const handleSystemClick = (systemId: number) => {
+    setCurrentSystem(systemId);
+    setViewLevel('system');
   };
 
   const handlePlanetClick = (planet: SystemPlanet) => {
@@ -553,12 +560,10 @@ export default function Galaxy() {
                           ? 'bg-gradient-to-br from-neon-purple/40 to-neon-blue/40 shadow-[0_0_20px_rgba(139,92,246,0.4)]' 
                           : 'bg-gradient-to-br from-gray-600/40 to-gray-800/40 shadow-[0_0_10px_rgba(107,114,128,0.3)]'
                       }`}
-                      style={{ transform: `rotate(${galaxy.rotation + animationTime * 10}deg)` }}
                     >
                       <div className="w-full h-full rounded-full bg-gradient-to-br from-white/10 to-transparent" />
                       {galaxy.type === 'spiral' && (
-                        <div className="absolute inset-2 rounded-full border border-white/20" 
-                             style={{ transform: `rotate(${animationTime * 20}deg)` }} />
+                        <div className="absolute inset-2 rounded-full border border-white/20" />
                       )}
                     </div>
                     
@@ -591,22 +596,20 @@ export default function Galaxy() {
           <div className="relative bg-space-900/50 rounded-lg p-8 min-h-96 overflow-hidden">
             {/* Enhanced space background with nebulae */}
             <div className="absolute inset-0">
-              {/* Nebula clouds */}
-              <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-radial from-purple-500/20 via-purple-500/10 to-transparent rounded-full blur-xl animate-pulse" />
-              <div className="absolute top-3/4 right-1/4 w-40 h-40 bg-gradient-radial from-blue-500/15 via-blue-500/8 to-transparent rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }} />
-              <div className="absolute bottom-1/4 left-1/3 w-24 h-24 bg-gradient-radial from-pink-500/20 via-pink-500/10 to-transparent rounded-full blur-xl animate-pulse" style={{ animationDelay: '2s' }} />
+              {/* Static nebula clouds */}
+              <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-radial from-purple-500/20 via-purple-500/10 to-transparent rounded-full blur-xl" />
+              <div className="absolute top-3/4 right-1/4 w-40 h-40 bg-gradient-radial from-blue-500/15 via-blue-500/8 to-transparent rounded-full blur-xl" />
+              <div className="absolute bottom-1/4 left-1/3 w-24 h-24 bg-gradient-radial from-pink-500/20 via-pink-500/10 to-transparent rounded-full blur-xl" />
               
-              {/* Distant stars */}
+              {/* Static distant stars */}
               {Array.from({ length: 150 }, (_, i) => (
                 <div
                   key={`bg-star-${i}`}
-                  className="absolute w-px h-px bg-white rounded-full animate-pulse"
+                  className="absolute w-px h-px bg-white rounded-full"
                   style={{
                     left: `${Math.random() * 100}%`,
                     top: `${Math.random() * 100}%`,
                     opacity: Math.random() * 0.8 + 0.2,
-                    animationDelay: `${Math.random() * 3}s`,
-                    animationDuration: `${Math.random() * 2 + 1}s`,
                   }}
                 />
               ))}
@@ -614,21 +617,21 @@ export default function Galaxy() {
 
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative w-full h-full max-w-2xl max-h-2xl">
-                {/* Galactic center */}
+                {/* Static galactic center */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                   <div className="relative">
-                    {/* Central black hole */}
-                    <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 rounded-full animate-pulse shadow-[0_0_40px_rgba(251,191,36,0.9)]">
+                    {/* Central black hole - static */}
+                    <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 rounded-full shadow-[0_0_40px_rgba(251,191,36,0.9)]">
                       <div className="absolute inset-1 bg-gradient-to-br from-yellow-300/60 to-transparent rounded-full" />
                       <div className="absolute inset-2 bg-gradient-to-br from-white/40 to-transparent rounded-full" />
                     </div>
-                    {/* Accretion disk */}
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-orange-400/30 rounded-full animate-spin" style={{ animationDuration: '10s' }} />
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 border border-yellow-400/20 rounded-full animate-spin" style={{ animationDuration: '8s', animationDirection: 'reverse' }} />
+                    {/* Static accretion disk */}
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-orange-400/30 rounded-full" />
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 border border-yellow-400/20 rounded-full" />
                   </div>
                 </div>
                 
-                {/* Enhanced spiral arms */}
+                {/* Static spiral arms */}
                 <svg className="absolute inset-0 w-full h-full opacity-30">
                   <defs>
                     <radialGradient id="armGradient" cx="50%" cy="50%" r="50%">
@@ -695,7 +698,7 @@ export default function Galaxy() {
                   })}
                 </svg>
 
-                {/* Galactic dust and gas clouds */}
+                {/* Static galactic dust and gas clouds */}
                 <div className="absolute inset-0">
                   {Array.from({ length: 20 }, (_, i) => {
                     const angle = (i / 20) * Math.PI * 2;
@@ -710,153 +713,61 @@ export default function Galaxy() {
                           left: `${x}%`,
                           top: `${y}%`,
                           transform: 'translate(-50%, -50%)',
-                          animationDelay: `${Math.random() * 5}s`,
                         }}
                       />
                     );
                   })}
                 </div>
 
-                {/* Enhanced systems distribution along spiral arms */}
-                {(() => {
-                  const enhancedSystems = [];
-                  
-                  // Main spiral arms (2 arms)
-                  for (let arm = 0; arm < 2; arm++) {
-                    const systemsInArm = 40;
-                    for (let i = 0; i < systemsInArm; i++) {
-                      const systemId = arm * systemsInArm + i + 1;
-                      const t = i / systemsInArm;
-                      const armAngle = arm * Math.PI;
-                      const radius = 50 + t * 200;
-                      const spiralAngle = armAngle + t * Math.PI * 2.5;
+                {/* Systems distribution along spiral arms */}
+                {galaxyData.map((system) => (
+                  <div
+                    key={system.id}
+                    onClick={() => handleSystemClick(system.id)}
+                    className="absolute cursor-pointer group"
+                    style={{
+                      left: `calc(50% + ${system.x}px)`,
+                      top: `calc(50% + ${system.y}px)`,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                  >
+                    {/* System star with enhanced visuals */}
+                    <div className="relative">
+                      <div 
+                        className={`w-3 h-3 rounded-full transition-all duration-300 group-hover:scale-150 ${
+                          system.activity === 'high' ? 'bg-neon-green shadow-[0_0_12px_rgba(16,185,129,0.8)]' :
+                          system.activity === 'medium' ? 'bg-neon-blue shadow-[0_0_8px_rgba(0,212,255,0.6)]' :
+                          system.activity === 'low' ? 'bg-neon-orange shadow-[0_0_6px_rgba(245,158,11,0.4)]' :
+                          'bg-gray-400 shadow-[0_0_4px_rgba(156,163,175,0.3)]'
+                        }`}
+                        style={{ opacity: system.brightness }}
+                      />
                       
-                      // Add some randomness to make it look more natural
-                      const randomOffset = (Math.random() - 0.5) * 30;
-                      const randomAngle = (Math.random() - 0.5) * 0.3;
-                      
-                      const x = Math.cos(spiralAngle + randomAngle) * (radius + randomOffset);
-                      const y = Math.sin(spiralAngle + randomAngle) * (radius + randomOffset);
-                      
-                      enhancedSystems.push({
-                        id: systemId,
-                        x,
-                        y,
-                        brightness: 0.6 + Math.random() * 0.4,
-                        activity: ['high', 'medium', 'low', 'none'][Math.floor(Math.random() * 4)] as any,
-                        isMainArm: true,
-                      });
-                    }
-                  }
-                  
-                  // Secondary arms and scattered systems
-                  for (let arm = 0; arm < 2; arm++) {
-                    const systemsInArm = 15;
-                    for (let i = 0; i < systemsInArm; i++) {
-                      const systemId = 80 + arm * systemsInArm + i + 1;
-                      const t = i / systemsInArm;
-                      const armAngle = (arm + 0.5) * Math.PI;
-                      const radius = 30 + t * 120;
-                      const spiralAngle = armAngle + t * Math.PI * 1.8;
-                      
-                      const randomOffset = (Math.random() - 0.5) * 40;
-                      const randomAngle = (Math.random() - 0.5) * 0.5;
-                      
-                      const x = Math.cos(spiralAngle + randomAngle) * (radius + randomOffset);
-                      const y = Math.sin(spiralAngle + randomAngle) * (radius + randomOffset);
-                      
-                      enhancedSystems.push({
-                        id: systemId,
-                        x,
-                        y,
-                        brightness: 0.3 + Math.random() * 0.4,
-                        activity: ['medium', 'low', 'none'][Math.floor(Math.random() * 3)] as any,
-                        isMainArm: false,
-                      });
-                    }
-                  }
-                  
-                  // Scattered halo systems
-                  for (let i = 0; i < 25; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const radius = 180 + Math.random() * 80;
-                    const x = Math.cos(angle) * radius;
-                    const y = Math.sin(angle) * radius;
-                    
-                    enhancedSystems.push({
-                      id: 110 + i,
-                      x,
-                      y,
-                      brightness: 0.2 + Math.random() * 0.3,
-                      activity: ['low', 'none'][Math.floor(Math.random() * 2)] as any,
-                      isMainArm: false,
-                    });
-                  }
-                  
-                  return enhancedSystems.map((system) => (
-                    <path
-                      key={system.id}
-                      onClick={() => {
-                        setCurrentSystem(system.id);
-                        setViewLevel('system');
-                      }}
-                      className="absolute cursor-pointer group"
-                      style={{
-                        left: `calc(50% + ${system.x}px)`,
-                        top: `calc(50% + ${system.y}px)`,
-                        transform: 'translate(-50%, -50%)',
-                      }}
-                    >
-                      {/* System star with enhanced visuals */}
-                      <div className="relative">
-                        <div 
-                          className={`rounded-full transition-all duration-300 group-hover:scale-150 ${
-                            system.isMainArm ? 'w-3 h-3' : 'w-2 h-2'
-                          } ${
-                            system.activity === 'high' ? 'bg-neon-green shadow-[0_0_12px_rgba(16,185,129,0.8)]' :
-                            system.activity === 'medium' ? 'bg-neon-blue shadow-[0_0_8px_rgba(0,212,255,0.6)]' :
-                            system.activity === 'low' ? 'bg-neon-orange shadow-[0_0_6px_rgba(245,158,11,0.4)]' :
-                            'bg-gray-400 shadow-[0_0_4px_rgba(156,163,175,0.3)]'
-                          }`}
-                          style={{ opacity: system.brightness }}
-                        >
-                          {/* Star corona effect for brighter systems */}
-                          {system.brightness > 0.7 && (
-                            <div className="absolute inset-0 rounded-full animate-pulse" style={{
-                              boxShadow: `0 0 ${system.isMainArm ? '16px' : '12px'} rgba(255,255,255,0.3)`,
-                              animationDuration: `${2 + Math.random() * 2}s`
-                            }} />
-                          )}
+                      {/* Player system indicator */}
+                      {system.id === playerSystem && currentGalaxy === playerGalaxy && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-neon-green rounded-full animate-pulse border-2 border-white shadow-[0_0_10px_rgba(16,185,129,0.8)]">
+                          <div className="absolute inset-0.5 bg-white rounded-full" />
                         </div>
-                        
-                        {/* Player system indicator */}
-                        {system.id === playerSystem && currentGalaxy === playerGalaxy && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-neon-green rounded-full animate-pulse border-2 border-white shadow-[0_0_10px_rgba(16,185,129,0.8)]">
-                            <div className="absolute inset-0.5 bg-white rounded-full" />
-                          </div>
-                        )}
-                        
-                        {/* System info tooltip */}
-                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
-                          <div className="bg-space-900/95 px-3 py-2 rounded-lg text-xs text-white whitespace-nowrap border border-space-600 shadow-xl backdrop-blur-sm">
-                            <p className="font-rajdhani font-medium text-neon-blue">Sistema {system.id}</p>
-                            <p className="text-gray-400">Coordenadas: {currentGalaxy}:{system.id}</p>
-                            <p className="text-gray-400">
-                              Actividad: {
-                                system.activity === 'high' ? 'Alta' :
-                                system.activity === 'medium' ? 'Media' :
-                                system.activity === 'low' ? 'Baja' : 'Ninguna'
-                              }
-                            </p>
-                            <p className="text-gray-400">
-                              Ubicación: {system.isMainArm ? 'Brazo Principal' : 'Brazo Secundario'}
-                            </p>
-                          </div>
+                      )}
+                      
+                      {/* System info tooltip */}
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                        <div className="bg-space-900/95 px-3 py-2 rounded-lg text-xs text-white whitespace-nowrap border border-space-600 shadow-xl backdrop-blur-sm">
+                          <p className="font-rajdhani font-medium text-neon-blue">Sistema {system.id}</p>
+                          <p className="text-gray-400">Coordenadas: {currentGalaxy}:{system.id}</p>
+                          <p className="text-gray-400">
+                            Actividad: {
+                              system.activity === 'high' ? 'Alta' :
+                              system.activity === 'medium' ? 'Media' :
+                              system.activity === 'low' ? 'Baja' : 'Ninguna'
+                            }
+                          </p>
+                          <p className="text-gray-400">Planetas: {system.planets}</p>
                         </div>
                       </div>
-                    </path>
-                  ));
-                })()}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
             
@@ -866,7 +777,7 @@ export default function Galaxy() {
               <div className="space-y-1 text-xs text-gray-400">
                 <p>• Tipo: Espiral Barrada</p>
                 <p>• Diámetro: ~100,000 años luz</p>
-                <p>• Sistemas: ~135 explorados</p>
+                <p>• Sistemas: ~500 explorados</p>
                 <p>• Brazos principales: 2</p>
                 <p>• Brazos secundarios: 2</p>
               </div>
@@ -900,7 +811,7 @@ export default function Galaxy() {
               >
                 {/* Central Star */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full animate-pulse shadow-[0_0_40px_rgba(251,191,36,0.8)]">
+                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full shadow-[0_0_40px_rgba(251,191,36,0.8)]">
                     <div className="w-full h-full rounded-full bg-gradient-to-br from-yellow-300/50 to-transparent" />
                   </div>
                 </div>
@@ -920,7 +831,6 @@ export default function Galaxy() {
                 {/* Planets with realistic orbital motion */}
                 {systemData.map((planet) => {
                   // Calculate orbital position for all planets
-                  
                   const currentAngle = planet.currentAngle + (animationTime * planet.orbitSpeed);
                   const x = Math.cos(currentAngle) * planet.orbitRadius;
                   const y = Math.sin(currentAngle) * planet.orbitRadius;
@@ -1190,7 +1100,6 @@ export default function Galaxy() {
                           </Button>
                         </div>
                       )}
-
 
                       {selectedPlanet.player?.isOwn && (
                         <div className="space-y-2">

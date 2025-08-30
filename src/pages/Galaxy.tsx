@@ -654,7 +654,7 @@ export default function Galaxy() {
                 </div>
 
                 {/* Orbital Paths */}
-                {systemData.filter(p => p.planet).map((planet) => (
+                {systemData.map((planet) => (
                   <div
                     key={`orbit-${planet.position}`}
                     className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border border-space-600/20 rounded-full"
@@ -667,7 +667,7 @@ export default function Galaxy() {
 
                 {/* Planets with realistic orbital motion */}
                 {systemData.map((planet) => {
-                  // Show all positions, whether inhabited or not
+                  // Calculate orbital position for all planets
                   
                   const currentAngle = planet.currentAngle + (animationTime * planet.orbitSpeed);
                   const x = Math.cos(currentAngle) * planet.orbitRadius;
@@ -775,8 +775,8 @@ export default function Galaxy() {
                               {planet.planet?.name || `Posición ${planet.position}`}
                             </p>
                             <p className="text-gray-400">{currentGalaxy}:{currentSystem}:{planet.position}</p>
-                            {!planet.planet && (
-                              <p className="text-gray-500">Planeta no habitado</p>
+                            {!isInhabited && (
+                              <p className="text-gray-500">Posición libre para colonizar</p>
                             )}
                             {planet.player && (
                               <p className={`${isPlayerPlanet ? 'text-neon-green' : 'text-neon-purple'}`}>
@@ -819,7 +819,31 @@ export default function Galaxy() {
             <Card title="Detalles del Objeto Seleccionado">
               {(() => {
                 const selectedPlanet = systemData.find(p => p.position === selectedPlanetPos);
-                if (!selectedPlanet?.planet) return null;
+                if (!selectedPlanet) return null;
+                
+                // Show details for both inhabited and uninhabited positions
+                if (!selectedPlanet.planet) {
+                  return (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-dashed border-gray-500 flex items-center justify-center">
+                        <MapPin className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-xl font-rajdhani font-bold text-white mb-2">
+                        Posición {selectedPlanet.position}
+                      </h3>
+                      <p className="text-gray-400 mb-4">
+                        {currentGalaxy}:{currentSystem}:{selectedPlanet.position}
+                      </p>
+                      <p className="text-gray-500 mb-6">
+                        Esta posición orbital está libre para colonización
+                      </p>
+                      <Button variant="success">
+                        <MapPin className="w-4 h-4 mr-2" />
+                        Colonizar Posición
+                      </Button>
+                    </div>
+                  );
+                }
 
                 return (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -915,12 +939,6 @@ export default function Galaxy() {
                         </div>
                       )}
 
-                      {!selectedPlanet.player && (
-                        <Button variant="success" className="w-full">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          Colonizar Planeta
-                        </Button>
-                      )}
 
                       {selectedPlanet.player?.isOwn && (
                         <div className="space-y-2">
@@ -974,7 +992,7 @@ export default function Galaxy() {
                       <span className="text-sm font-rajdhani font-medium text-white">Planetas</span>
                     </div>
                     <p className="text-lg font-orbitron font-bold text-white">
-                      {systemData.filter(p => p.planet).length}
+                      {systemData.filter(p => p.planet).length}/15
                     </p>
                   </div>
 
@@ -1000,11 +1018,11 @@ export default function Galaxy() {
 
                   <div className="p-3 bg-space-700/30 rounded-lg">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Target className="w-4 h-4 text-neon-orange" />
-                      <span className="text-sm font-rajdhani font-medium text-white">Libres</span>
+                      <MapPin className="w-4 h-4 text-neon-green" />
+                      <span className="text-sm font-rajdhani font-medium text-white">Colonizables</span>
                     </div>
                     <p className="text-lg font-orbitron font-bold text-white">
-                      {15 - systemData.filter(p => p.player).length}
+                      {systemData.filter(p => !p.planet).length}
                     </p>
                   </div>
                 </div>
@@ -1098,12 +1116,12 @@ export default function Galaxy() {
                         </div>
                       ) : (
                         <div className="flex items-center space-x-2">
-                          <div className="w-6 h-6 rounded-full border-2 border-dashed border-gray-500 flex items-center justify-center">
-                            <span className="text-gray-400 text-xs font-bold">?</span>
+                          <div className="w-6 h-6 rounded-full border-2 border-dashed border-gray-600 flex items-center justify-center bg-space-800/30">
+                            <div className="w-1 h-1 bg-gray-500 rounded-full opacity-50" />
                           </div>
                           <div>
                             <p className="text-sm text-gray-500">Posición {planet.position}</p>
-                            <p className="text-xs text-gray-600">No habitado</p>
+                            <p className="text-xs text-gray-600">Libre para colonizar</p>
                           </div>
                         </div>
                       )}
@@ -1209,7 +1227,7 @@ export default function Galaxy() {
                           </button>
                         </>
                       )}
-                      {!planet.player && (
+                      {!planet.planet && (
                         <button 
                           className="p-1 bg-neon-green/20 hover:bg-neon-green/30 text-neon-green rounded transition-colors"
                           title="Colonizar"

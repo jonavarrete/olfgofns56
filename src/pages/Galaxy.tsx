@@ -71,6 +71,8 @@ export default function Galaxy() {
   const systemViewRef = useRef<HTMLDivElement>(null);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [zoomOrigin, setZoomOrigin] = useState({ x: 50, y: 50 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   // Get player's current location
   const playerPlanet = player.planets[0];
@@ -95,10 +97,6 @@ export default function Galaxy() {
     const container = containerRef.current;
     if (!container || viewLevel !== 'system') return;
 
-    let isPanning = false;
-    let startX = 0;
-    let startY = 0;
-
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       
@@ -114,51 +112,42 @@ export default function Galaxy() {
     };
 
     const handleMouseDown = (e: MouseEvent) => {
-      isPanning = true;
-      startX = e.clientX - panOffset.x;
-      startY = e.clientY - panOffset.y;
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
       container.style.cursor = 'grabbing';
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isPanning) return;
-      const newPanOffset = {
-        x: e.clientX - startX,
-        y: e.clientY - startY
-      };
-      setPanOffset(newPanOffset);
-      if (systemViewRef.current) {
-        systemViewRef.current.style.transform = `translate(${newPanOffset.x}px, ${newPanOffset.y}px) scale(${zoomLevel})`;
-        systemViewRef.current.style.transformOrigin = `${zoomOrigin.x}% ${zoomOrigin.y}%`;
-      }
+      if (!isDragging) return;
+      setPanOffset({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
     };
 
     const handleMouseUp = () => {
-      isPanning = false;
+      setIsDragging(false);
       container.style.cursor = 'grab';
     };
 
     // Touch events for mobile
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 1) {
-        isPanning = true;
-        startX = e.touches[0].clientX - panOffset.x;
-        startY = e.touches[0].clientY - panOffset.y;
+        setIsDragging(true);
+        setDragStart({ 
+          x: e.touches[0].clientX - panOffset.x, 
+          y: e.touches[0].clientY - panOffset.y 
+        });
       }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault();
-      if (e.touches.length === 1 && isPanning) {
-        const newPanOffset = {
+      if (e.touches.length === 1 && isDragging) {
+        setPanOffset({
           x: e.touches[0].clientX - startX,
           y: e.touches[0].clientY - startY
-        };
-        setPanOffset(newPanOffset);
-        if (systemViewRef.current) {
-          systemViewRef.current.style.transform = `translate(${newPanOffset.x}px, ${newPanOffset.y}px) scale(${zoomLevel})`;
-          systemViewRef.current.style.transformOrigin = `${zoomOrigin.x}% ${zoomOrigin.y}%`;
-        }
+        });
       } else if (e.touches.length === 2) {
         // Pinch to zoom
         const touch1 = e.touches[0];
@@ -189,7 +178,7 @@ export default function Galaxy() {
     };
 
     const handleTouchEnd = () => {
-      isPanning = false;
+      setIsDragging(false);
       delete container.dataset.lastDistance;
     };
 
@@ -212,13 +201,14 @@ export default function Galaxy() {
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [viewLevel, zoomLevel, panOffset, zoomOrigin]);
+  }, [viewLevel, isDragging, dragStart, panOffset]);
 
   // Update transform when zoom level changes
   useEffect(() => {
     if (systemViewRef.current && viewLevel === 'system') {
       systemViewRef.current.style.transform = `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`;
       systemViewRef.current.style.transformOrigin = `${zoomOrigin.x}% ${zoomOrigin.y}%`;
+      systemViewRef.current.style.transition = isDragging ? 'none' : 'transform 0.2s ease-out';
     }
   }, [zoomLevel, panOffset, zoomOrigin, viewLevel]);
 
@@ -599,65 +589,293 @@ export default function Galaxy() {
       {viewLevel === 'galaxy' && (
         <Card title={`Galaxia ${currentGalaxy} - Vista Espiral`} glowing>
           <div className="relative bg-space-900/50 rounded-lg p-8 min-h-96 overflow-hidden">
+            {/* Enhanced space background with nebulae */}
+            <div className="absolute inset-0">
+              {/* Nebula clouds */}
+              <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-radial from-purple-500/20 via-purple-500/10 to-transparent rounded-full blur-xl animate-pulse" />
+              <div className="absolute top-3/4 right-1/4 w-40 h-40 bg-gradient-radial from-blue-500/15 via-blue-500/8 to-transparent rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }} />
+              <div className="absolute bottom-1/4 left-1/3 w-24 h-24 bg-gradient-radial from-pink-500/20 via-pink-500/10 to-transparent rounded-full blur-xl animate-pulse" style={{ animationDelay: '2s' }} />
+              
+              {/* Distant stars */}
+              {Array.from({ length: 150 }, (_, i) => (
+                <div
+                  key={`bg-star-${i}`}
+                  className="absolute w-px h-px bg-white rounded-full animate-pulse"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                    opacity: Math.random() * 0.8 + 0.2,
+                    animationDelay: `${Math.random() * 3}s`,
+                    animationDuration: `${Math.random() * 2 + 1}s`,
+                  }}
+                />
+              ))}
+            </div>
+
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative w-full h-full max-w-2xl max-h-2xl">
                 {/* Galactic center */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full animate-pulse shadow-[0_0_30px_rgba(251,191,36,0.8)]" />
+                  <div className="relative">
+                    {/* Central black hole */}
+                    <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 rounded-full animate-pulse shadow-[0_0_40px_rgba(251,191,36,0.9)]">
+                      <div className="absolute inset-1 bg-gradient-to-br from-yellow-300/60 to-transparent rounded-full" />
+                      <div className="absolute inset-2 bg-gradient-to-br from-white/40 to-transparent rounded-full" />
+                    </div>
+                    {/* Accretion disk */}
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-orange-400/30 rounded-full animate-spin" style={{ animationDuration: '10s' }} />
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 border border-yellow-400/20 rounded-full animate-spin" style={{ animationDuration: '8s', animationDirection: 'reverse' }} />
+                  </div>
                 </div>
                 
-                {/* Spiral arms */}
-                <svg className="absolute inset-0 w-full h-full opacity-20">
-                  {[0, 1, 2, 3].map(arm => (
-                    <path
-                      key={arm}
-                      d={`M 50% 50% Q ${50 + Math.cos(arm * Math.PI / 2) * 30}% ${50 + Math.sin(arm * Math.PI / 2) * 30}% ${50 + Math.cos(arm * Math.PI / 2 + Math.PI) * 40}% ${50 + Math.sin(arm * Math.PI / 2 + Math.PI) * 40}%`}
-                      stroke="rgba(139,92,246,0.3)"
-                      strokeWidth="2"
-                      fill="none"
-                    />
-                  ))}
+                {/* Enhanced spiral arms */}
+                <svg className="absolute inset-0 w-full h-full opacity-30">
+                  <defs>
+                    <radialGradient id="armGradient" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="rgba(139,92,246,0.6)" />
+                      <stop offset="50%" stopColor="rgba(59,130,246,0.4)" />
+                      <stop offset="100%" stopColor="rgba(139,92,246,0.1)" />
+                    </radialGradient>
+                  </defs>
+                  
+                  {/* Main spiral arms */}
+                  {[0, 1].map(arm => {
+                    const armAngle = arm * Math.PI;
+                    const points = [];
+                    for (let i = 0; i <= 100; i++) {
+                      const t = i / 100;
+                      const radius = 50 + t * 200;
+                      const angle = armAngle + t * Math.PI * 2.5;
+                      const x = 50 + Math.cos(angle) * radius / 4;
+                      const y = 50 + Math.sin(angle) * radius / 4;
+                      points.push(`${x},${y}`);
+                    }
+                    return (
+                      <g key={`main-arm-${arm}`}>
+                        <path
+                          d={`M ${points.join(' L ')}`}
+                          stroke="url(#armGradient)"
+                          strokeWidth="8"
+                          fill="none"
+                          opacity="0.8"
+                        />
+                        <path
+                          d={`M ${points.join(' L ')}`}
+                          stroke="rgba(255,255,255,0.1)"
+                          strokeWidth="12"
+                          fill="none"
+                          opacity="0.3"
+                        />
+                      </g>
+                    );
+                  })}
+                  
+                  {/* Secondary spiral arms */}
+                  {[0.5, 1.5].map(arm => {
+                    const armAngle = arm * Math.PI;
+                    const points = [];
+                    for (let i = 0; i <= 80; i++) {
+                      const t = i / 80;
+                      const radius = 30 + t * 150;
+                      const angle = armAngle + t * Math.PI * 2;
+                      const x = 50 + Math.cos(angle) * radius / 4;
+                      const y = 50 + Math.sin(angle) * radius / 4;
+                      points.push(`${x},${y}`);
+                    }
+                    return (
+                      <path
+                        key={`secondary-arm-${arm}`}
+                        d={`M ${points.join(' L ')}`}
+                        stroke="rgba(139,92,246,0.3)"
+                        strokeWidth="4"
+                        fill="none"
+                        opacity="0.6"
+                      />
+                    );
+                  })}
                 </svg>
 
-                {/* Systems */}
-                {galaxyData.slice(0, 100).map((system) => (
-                  <div
-                    key={system.id}
-                    onClick={() => {
-                      setCurrentSystem(system.id);
-                      setViewLevel('system');
-                    }}
-                    className="absolute cursor-pointer group"
-                    style={{
-                      left: `calc(50% + ${system.x}px)`,
-                      top: `calc(50% + ${system.y}px)`,
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                  >
-                    <div 
-                      className={`w-2 h-2 rounded-full transition-all duration-300 group-hover:scale-150 ${
-                        system.activity === 'high' ? 'bg-neon-green shadow-[0_0_8px_rgba(16,185,129,0.6)]' :
-                        system.activity === 'medium' ? 'bg-neon-blue shadow-[0_0_6px_rgba(0,212,255,0.4)]' :
-                        system.activity === 'low' ? 'bg-neon-orange shadow-[0_0_4px_rgba(245,158,11,0.3)]' :
-                        'bg-gray-500'
-                      }`}
-                      style={{ opacity: system.brightness }}
-                    />
+                {/* Galactic dust and gas clouds */}
+                <div className="absolute inset-0">
+                  {Array.from({ length: 20 }, (_, i) => {
+                    const angle = (i / 20) * Math.PI * 2;
+                    const radius = 100 + Math.random() * 150;
+                    const x = 50 + Math.cos(angle) * radius / 4;
+                    const y = 50 + Math.sin(angle) * radius / 4;
+                    return (
+                      <div
+                        key={`dust-${i}`}
+                        className="absolute w-8 h-8 bg-gradient-radial from-purple-400/10 via-blue-400/5 to-transparent rounded-full blur-sm"
+                        style={{
+                          left: `${x}%`,
+                          top: `${y}%`,
+                          transform: 'translate(-50%, -50%)',
+                          animationDelay: `${Math.random() * 5}s`,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Enhanced systems distribution along spiral arms */}
+                {(() => {
+                  const enhancedSystems = [];
+                  
+                  // Main spiral arms (2 arms)
+                  for (let arm = 0; arm < 2; arm++) {
+                    const systemsInArm = 40;
+                    for (let i = 0; i < systemsInArm; i++) {
+                      const systemId = arm * systemsInArm + i + 1;
+                      const t = i / systemsInArm;
+                      const armAngle = arm * Math.PI;
+                      const radius = 50 + t * 200;
+                      const spiralAngle = armAngle + t * Math.PI * 2.5;
+                      
+                      // Add some randomness to make it look more natural
+                      const randomOffset = (Math.random() - 0.5) * 30;
+                      const randomAngle = (Math.random() - 0.5) * 0.3;
+                      
+                      const x = Math.cos(spiralAngle + randomAngle) * (radius + randomOffset);
+                      const y = Math.sin(spiralAngle + randomAngle) * (radius + randomOffset);
+                      
+                      enhancedSystems.push({
+                        id: systemId,
+                        x,
+                        y,
+                        brightness: 0.6 + Math.random() * 0.4,
+                        activity: ['high', 'medium', 'low', 'none'][Math.floor(Math.random() * 4)] as any,
+                        isMainArm: true,
+                      });
+                    }
+                  }
+                  
+                  // Secondary arms and scattered systems
+                  for (let arm = 0; arm < 2; arm++) {
+                    const systemsInArm = 15;
+                    for (let i = 0; i < systemsInArm; i++) {
+                      const systemId = 80 + arm * systemsInArm + i + 1;
+                      const t = i / systemsInArm;
+                      const armAngle = (arm + 0.5) * Math.PI;
+                      const radius = 30 + t * 120;
+                      const spiralAngle = armAngle + t * Math.PI * 1.8;
+                      
+                      const randomOffset = (Math.random() - 0.5) * 40;
+                      const randomAngle = (Math.random() - 0.5) * 0.5;
+                      
+                      const x = Math.cos(spiralAngle + randomAngle) * (radius + randomOffset);
+                      const y = Math.sin(spiralAngle + randomAngle) * (radius + randomOffset);
+                      
+                      enhancedSystems.push({
+                        id: systemId,
+                        x,
+                        y,
+                        brightness: 0.3 + Math.random() * 0.4,
+                        activity: ['medium', 'low', 'none'][Math.floor(Math.random() * 3)] as any,
+                        isMainArm: false,
+                      });
+                    }
+                  }
+                  
+                  // Scattered halo systems
+                  for (let i = 0; i < 25; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 180 + Math.random() * 80;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
                     
-                    {system.id === playerSystem && currentGalaxy === playerGalaxy && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-neon-green rounded-full animate-pulse border border-white" />
-                    )}
-                    
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                      <div className="bg-space-900/90 px-2 py-1 rounded text-xs text-white whitespace-nowrap border border-space-600">
-                        <p className="font-rajdhani font-medium">Sistema {system.id}</p>
-                        <p className="text-gray-400">{system.planets} planetas</p>
-                        <p className="text-gray-400">{system.players} jugadores</p>
+                    enhancedSystems.push({
+                      id: 110 + i,
+                      x,
+                      y,
+                      brightness: 0.2 + Math.random() * 0.3,
+                      activity: ['low', 'none'][Math.floor(Math.random() * 2)] as any,
+                      isMainArm: false,
+                    });
+                  }
+                  
+                  return enhancedSystems.map((system) => (
+                    <path
+                      key={system.id}
+                      onClick={() => {
+                        setCurrentSystem(system.id);
+                        setViewLevel('system');
+                      }}
+                      className="absolute cursor-pointer group"
+                      style={{
+                        left: `calc(50% + ${system.x}px)`,
+                        top: `calc(50% + ${system.y}px)`,
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    >
+                      {/* System star with enhanced visuals */}
+                      <div className="relative">
+                        <div 
+                          className={`rounded-full transition-all duration-300 group-hover:scale-150 ${
+                            system.isMainArm ? 'w-3 h-3' : 'w-2 h-2'
+                          } ${
+                            system.activity === 'high' ? 'bg-neon-green shadow-[0_0_12px_rgba(16,185,129,0.8)]' :
+                            system.activity === 'medium' ? 'bg-neon-blue shadow-[0_0_8px_rgba(0,212,255,0.6)]' :
+                            system.activity === 'low' ? 'bg-neon-orange shadow-[0_0_6px_rgba(245,158,11,0.4)]' :
+                            'bg-gray-400 shadow-[0_0_4px_rgba(156,163,175,0.3)]'
+                          }`}
+                          style={{ opacity: system.brightness }}
+                        >
+                          {/* Star corona effect for brighter systems */}
+                          {system.brightness > 0.7 && (
+                            <div className="absolute inset-0 rounded-full animate-pulse" style={{
+                              boxShadow: `0 0 ${system.isMainArm ? '16px' : '12px'} rgba(255,255,255,0.3)`,
+                              animationDuration: `${2 + Math.random() * 2}s`
+                            }} />
+                          )}
+                        </div>
+                        
+                        {/* Player system indicator */}
+                        {system.id === playerSystem && currentGalaxy === playerGalaxy && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-neon-green rounded-full animate-pulse border-2 border-white shadow-[0_0_10px_rgba(16,185,129,0.8)]">
+                            <div className="absolute inset-0.5 bg-white rounded-full" />
+                          </div>
+                        )}
+                        
+                        {/* System info tooltip */}
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                          <div className="bg-space-900/95 px-3 py-2 rounded-lg text-xs text-white whitespace-nowrap border border-space-600 shadow-xl backdrop-blur-sm">
+                            <p className="font-rajdhani font-medium text-neon-blue">Sistema {system.id}</p>
+                            <p className="text-gray-400">Coordenadas: {currentGalaxy}:{system.id}</p>
+                            <p className="text-gray-400">
+                              Actividad: {
+                                system.activity === 'high' ? 'Alta' :
+                                system.activity === 'medium' ? 'Media' :
+                                system.activity === 'low' ? 'Baja' : 'Ninguna'
+                              }
+                            </p>
+                            <p className="text-gray-400">
+                              Ubicación: {system.isMainArm ? 'Brazo Principal' : 'Brazo Secundario'}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    </path>
+                  ));
+                })()}
               </div>
+            </div>
+            
+            {/* Galaxy info overlay */}
+            <div className="absolute top-4 right-4 bg-space-900/80 px-4 py-3 rounded-lg border border-space-600 backdrop-blur-sm">
+              <h4 className="font-rajdhani font-semibold text-white mb-2">Galaxia {currentGalaxy}</h4>
+              <div className="space-y-1 text-xs text-gray-400">
+                <p>• Tipo: Espiral Barrada</p>
+                <p>• Diámetro: ~100,000 años luz</p>
+                <p>• Sistemas: ~135 explorados</p>
+                <p>• Brazos principales: 2</p>
+                <p>• Brazos secundarios: 2</p>
+              </div>
+            </div>
+            
+            {/* Controls overlay */}
+            <div className="absolute bottom-4 left-4 text-xs text-gray-400 bg-space-900/80 px-3 py-2 rounded-lg backdrop-blur-sm">
+              <p>🖱️ Haz clic en sistemas para explorar</p>
+              <p>⭐ Los sistemas más brillantes tienen mayor actividad</p>
             </div>
           </div>
         </Card>

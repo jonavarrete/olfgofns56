@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import Card from '../components/UI/Card';
 import Button from '../components/UI/Button';
+import AllianceBanner from '../components/Alliance/AllianceBanner';
 import { 
   Users, 
   Crown, 
@@ -86,7 +87,17 @@ export default function Alliance() {
               >
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-neon-purple/30 to-neon-blue/30 rounded-lg flex items-center justify-center">
-                    <Users className="w-6 h-6 text-neon-purple" />
+                    {alliance.banner ? (
+                      <AllianceBanner
+                        elements={alliance.banner.elements}
+                        background={alliance.banner.background}
+                        width={48}
+                        height={36}
+                        className="rounded"
+                      />
+                    ) : (
+                      <Users className="w-6 h-6 text-neon-purple" />
+                    )}
                   </div>
                   <div>
                     <div className="flex items-center space-x-2">
@@ -227,6 +238,25 @@ export default function Alliance() {
       {selectedTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card title="Información de la Alianza" glowing>
+            <div className="flex items-center space-x-4 mb-4">
+              {currentAlliance?.banner && (
+                <AllianceBanner
+                  elements={currentAlliance.banner.elements}
+                  background={currentAlliance.banner.background}
+                  width={80}
+                  height={60}
+                  className="rounded-lg"
+                />
+              )}
+              <div>
+                <h3 className="text-xl font-orbitron font-bold text-white">
+                  {currentAlliance?.name}
+                </h3>
+                <p className="text-neon-blue font-rajdhani font-medium">
+                  [{currentAlliance?.tag}]
+                </p>
+              </div>
+            </div>
             <div className="space-y-4">
               <div>
                 <h4 className="text-sm font-rajdhani font-medium text-gray-400 mb-1">
@@ -241,13 +271,18 @@ export default function Alliance() {
                   <h4 className="text-sm font-rajdhani font-medium text-gray-400 mb-1">
                     Fundada
                   </h4>
-                  <p className="text-white">Hace 156 días</p>
+                  <p className="text-white">
+                    {currentAlliance?.foundedDate ? 
+                      `Hace ${Math.floor((Date.now() - currentAlliance.foundedDate) / (1000 * 60 * 60 * 24))} días` : 
+                      'Hace 156 días'
+                    }
+                  </p>
                 </div>
                 <div>
                   <h4 className="text-sm font-rajdhani font-medium text-gray-400 mb-1">
                     Líder
                   </h4>
-                  <p className="text-white">AllianceLeader</p>
+                  <p className="text-white">{currentAlliance?.leader || 'AllianceLeader'}</p>
                 </div>
               </div>
             </div>

@@ -2,28 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import Card from '../components/UI/Card';
 import Button from '../components/UI/Button';
-import { 
-  Globe, 
-  Users, 
-  Target, 
-  Buildings,
-  Building,
-  Eye, 
-  Package, 
-  MapPin,
-  ChevronLeft,
-  ChevronRight,
-  Sword,
-  Shield,
-  ZoomIn,
-  ZoomOut,
-  Home,
-  Star,
-  Moon,
-  Orbit,
-  Navigation,
-  Info
-} from 'lucide-react';
+import { Globe, Users, Target, Building as Buildings, Building, Eye, Package, MapPin, ChevronLeft, ChevronRight, Sword, Shield, ZoomIn, ZoomOut, Home, Star, Moon, Orbit, Navigation, Info, Rocket } from 'lucide-react';
 
 type ViewLevel = 'universe' | 'galaxy' | 'system';
 
@@ -700,9 +679,11 @@ export default function Galaxy() {
                   return (
                     <div
                       key={planet.position}
-                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
+                      className="absolute group cursor-pointer"
                       style={{
-                        transform: `translate(${x - 50}%, ${y - 50}%)`,
+                        left: `calc(50% + ${x}px)`,
+                        top: `calc(50% + ${y}px)`,
+                        transform: 'translate(-50%, -50%)',
                       }}
                       onClick={() => handlePlanetClick(planet)}
                     >

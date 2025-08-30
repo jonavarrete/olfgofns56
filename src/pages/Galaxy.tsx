@@ -69,10 +69,21 @@ export default function Galaxy() {
   const [animationTime, setAnimationTime] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const systemViewRef = useRef<HTMLDivElement>(null);
+  const galaxyViewRef = useRef<HTMLDivElement>(null);
+  const universeViewRef = useRef<HTMLDivElement>(null);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [zoomOrigin, setZoomOrigin] = useState({ x: 50, y: 50 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  
+  // Separate zoom and pan states for each view
+  const [galaxyZoom, setGalaxyZoom] = useState(1);
+  const [galaxyPan, setGalaxyPan] = useState({ x: 0, y: 0 });
+  const [galaxyZoomOrigin, setGalaxyZoomOrigin] = useState({ x: 50, y: 50 });
+  
+  const [universeZoom, setUniverseZoom] = useState(1);
+  const [universePan, setUniversePan] = useState({ x: 0, y: 0 });
+  const [universeZoomOrigin, setUniverseZoomOrigin] = useState({ x: 50, y: 50 });
 
   // Get player's current location
   const playerPlanet = player.planets[0];
@@ -94,10 +105,61 @@ export default function Galaxy() {
     return () => clearInterval(interval);
   }, [viewLevel]);
 
-  // Zoom and pan controls
+  // Zoom and pan controls for all views
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container || viewLevel !== 'system') return;
+    const getActiveContainer = () => {
+      switch (viewLevel) {
+        case 'system': return containerRef.current;
+        case 'galaxy': return galaxyViewRef.current;
+        case 'universe': return universeViewRef.current;
+        default: return null;
+      }
+    };
+
+    const container = getActiveContainer();
+    if (!container) return;
+
+    const getCurrentZoom = () => {
+      switch (viewLevel) {
+        case 'system': return zoomLevel;
+        case 'galaxy': return galaxyZoom;
+        case 'universe': return universeZoom;
+        default: return 1;
+      }
+    };
+
+    const setCurrentZoom = (zoom: number) => {
+      switch (viewLevel) {
+        case 'system': setZoomLevel(zoom); break;
+        case 'galaxy': setGalaxyZoom(zoom); break;
+        case 'universe': setUniverseZoom(zoom); break;
+      }
+    };
+
+    const getCurrentPan = () => {
+      switch (viewLevel) {
+        case 'system': return panOffset;
+        case 'galaxy': return galaxyPan;
+        case 'universe': return universePan;
+        default: return { x: 0, y: 0 };
+      }
+    };
+
+    const setCurrentPan = (pan: { x: number; y: number }) => {
+      switch (viewLevel) {
+        case 'system': setPanOffset(pan); break;
+        case 'galaxy': setGalaxyPan(pan); break;
+        case 'universe': setUniversePan(pan); break;
+      }
+    };
+
+    const setCurrentZoomOrigin = (origin: { x: number; y: number }) => {
+      switch (viewLevel) {
+        case 'system': setZoomOrigin(origin); break;
+        case 'galaxy': setGalaxyZoomOrigin(origin); break;
+        case 'universe': setUniverseZoomOrigin(origin); break;
+      }
+    };
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -107,21 +169,23 @@ export default function Galaxy() {
       const mouseX = ((e.clientX - rect.left) / rect.width) * 100;
       const mouseY = ((e.clientY - rect.top) / rect.height) * 100;
       
-      setZoomOrigin({ x: mouseX, y: mouseY });
+      setCurrentZoomOrigin({ x: mouseX, y: mouseY });
       
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      setZoomLevel(prev => Math.max(0.3, Math.min(3, prev + delta)));
+      const currentZoom = getCurrentZoom();
+      setCurrentZoom(Math.max(0.3, Math.min(5, currentZoom + delta)));
     };
 
     const handleMouseDown = (e: MouseEvent) => {
       setIsDragging(true);
-      setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+      const currentPan = getCurrentPan();
+      setDragStart({ x: e.clientX - currentPan.x, y: e.clientY - currentPan.y });
       container.style.cursor = 'grabbing';
     };
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
-      setPanOffset({
+      setCurrentPan({
         x: e.clientX - dragStart.x,
         y: e.clientY - dragStart.y
       });
@@ -136,9 +200,10 @@ export default function Galaxy() {
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 1) {
         setIsDragging(true);
+        const currentPan = getCurrentPan();
         setDragStart({ 
-          x: e.touches[0].clientX - panOffset.x, 
-          y: e.touches[0].clientY - panOffset.y 
+          x: e.touches[0].clientX - currentPan.x, 
+          y: e.touches[0].clientY - currentPan.y 
         });
       }
     };
@@ -146,7 +211,7 @@ export default function Galaxy() {
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault();
       if (e.touches.length === 1 && isDragging) {
-        setPanOffset({
+        setCurrentPan({
           x: e.touches[0].clientX - dragStart.x,
           y: e.touches[0].clientY - dragStart.y
         });
@@ -160,7 +225,7 @@ export default function Galaxy() {
         const centerX = ((touch1.clientX + touch2.clientX) / 2 - rect.left) / rect.width * 100;
         const centerY = ((touch1.clientY + touch2.clientY) / 2 - rect.top) / rect.height * 100;
         
-        setZoomOrigin({ x: centerX, y: centerY });
+        setCurrentZoomOrigin({ x: centerX, y: centerY });
         
         const distance = Math.sqrt(
           Math.pow(touch2.clientX - touch1.clientX, 2) + 
@@ -174,7 +239,8 @@ export default function Galaxy() {
         
         const lastDistance = parseFloat(container.dataset.lastDistance);
         const scale = distance / lastDistance;
-        setZoomLevel(prev => Math.max(0.3, Math.min(3, prev * scale)));
+        const currentZoom = getCurrentZoom();
+        setCurrentZoom(Math.max(0.3, Math.min(5, currentZoom * scale)));
         container.dataset.lastDistance = distance.toString();
       }
     };
@@ -203,7 +269,7 @@ export default function Galaxy() {
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [viewLevel, isDragging, dragStart, panOffset]);
+  }, [viewLevel, isDragging, dragStart, panOffset, galaxyPan, universePan]);
 
   // Update transform when zoom level changes
   useEffect(() => {
@@ -212,7 +278,19 @@ export default function Galaxy() {
       systemViewRef.current.style.transformOrigin = `${zoomOrigin.x}% ${zoomOrigin.y}%`;
       systemViewRef.current.style.transition = isDragging ? 'none' : 'transform 0.2s ease-out';
     }
-  }, [zoomLevel, panOffset, zoomOrigin, viewLevel]);
+    
+    if (galaxyViewRef.current && viewLevel === 'galaxy') {
+      galaxyViewRef.current.style.transform = `translate(${galaxyPan.x}px, ${galaxyPan.y}px) scale(${galaxyZoom})`;
+      galaxyViewRef.current.style.transformOrigin = `${galaxyZoomOrigin.x}% ${galaxyZoomOrigin.y}%`;
+      galaxyViewRef.current.style.transition = isDragging ? 'none' : 'transform 0.2s ease-out';
+    }
+    
+    if (universeViewRef.current && viewLevel === 'universe') {
+      universeViewRef.current.style.transform = `translate(${universePan.x}px, ${universePan.y}px) scale(${universeZoom})`;
+      universeViewRef.current.style.transformOrigin = `${universeZoomOrigin.x}% ${universeZoomOrigin.y}%`;
+      universeViewRef.current.style.transition = isDragging ? 'none' : 'transform 0.2s ease-out';
+    }
+  }, [zoomLevel, panOffset, zoomOrigin, galaxyZoom, galaxyPan, galaxyZoomOrigin, universeZoom, universePan, universeZoomOrigin, viewLevel, isDragging]);
 
   // Generate universe data with realistic positioning
   const generateUniverseData = (): UniverseGalaxy[] => {
@@ -318,13 +396,30 @@ export default function Galaxy() {
     }
   }, [currentGalaxy, currentSystem, viewLevel]);
 
+  // Reset zoom and pan when changing views
   const navigateToLevel = (level: ViewLevel) => {
     setViewLevel(level);
-    setZoomLevel(1);
-    setPanOffset({ x: 0, y: 0 });
-    setZoomOrigin({ x: 50, y: 50 });
     setSelectedPlanetPos(null);
     setSelectedMoonPos(null);
+    
+    // Reset current view's zoom and pan
+    switch (level) {
+      case 'system':
+        setZoomLevel(1);
+        setPanOffset({ x: 0, y: 0 });
+        setZoomOrigin({ x: 50, y: 50 });
+        break;
+      case 'galaxy':
+        setGalaxyZoom(1);
+        setGalaxyPan({ x: 0, y: 0 });
+        setGalaxyZoomOrigin({ x: 50, y: 50 });
+        break;
+      case 'universe':
+        setUniverseZoom(1);
+        setUniversePan({ x: 0, y: 0 });
+        setUniverseZoomOrigin({ x: 50, y: 50 });
+        break;
+    }
   };
 
   const navigateGalaxy = (direction: 'prev' | 'next') => {
@@ -465,23 +560,64 @@ export default function Galaxy() {
               )}
             </div>
 
-            {/* Zoom Controls */}
-            {viewLevel === 'system' && (
+            {/* Zoom Controls for all views */}
+            {(viewLevel === 'system' || viewLevel === 'galaxy' || viewLevel === 'universe') && (
               <div className="flex items-center space-x-2 border-l border-space-600 pl-4">
                 <button
-                  onClick={() => setZoomLevel(Math.max(0.3, zoomLevel - 0.2))}
+                  onClick={() => {
+                    switch (viewLevel) {
+                      case 'system': setZoomLevel(Math.max(0.3, zoomLevel - 0.2)); break;
+                      case 'galaxy': setGalaxyZoom(Math.max(0.3, galaxyZoom - 0.2)); break;
+                      case 'universe': setUniverseZoom(Math.max(0.3, universeZoom - 0.2)); break;
+                    }
+                  }}
                   className="p-2 bg-space-700 hover:bg-space-600 rounded-lg transition-colors"
                 >
                   <ZoomOut className="w-4 h-4 text-gray-400" />
                 </button>
                 <span className="text-sm font-rajdhani font-medium text-white px-2 min-w-[60px] text-center">
-                  {Math.round(zoomLevel * 100)}%
+                  {Math.round((
+                    viewLevel === 'system' ? zoomLevel :
+                    viewLevel === 'galaxy' ? galaxyZoom :
+                    universeZoom
+                  ) * 100)}%
                 </span>
                 <button
-                  onClick={() => setZoomLevel(Math.min(3, zoomLevel + 0.2))}
+                  onClick={() => {
+                    switch (viewLevel) {
+                      case 'system': setZoomLevel(Math.min(5, zoomLevel + 0.2)); break;
+                      case 'galaxy': setGalaxyZoom(Math.min(5, galaxyZoom + 0.2)); break;
+                      case 'universe': setUniverseZoom(Math.min(5, universeZoom + 0.2)); break;
+                    }
+                  }}
                   className="p-2 bg-space-700 hover:bg-space-600 rounded-lg transition-colors"
                 >
                   <ZoomIn className="w-4 h-4 text-gray-400" />
+                </button>
+                <button
+                  onClick={() => {
+                    switch (viewLevel) {
+                      case 'system':
+                        setZoomLevel(1);
+                        setPanOffset({ x: 0, y: 0 });
+                        setZoomOrigin({ x: 50, y: 50 });
+                        break;
+                      case 'galaxy':
+                        setGalaxyZoom(1);
+                        setGalaxyPan({ x: 0, y: 0 });
+                        setGalaxyZoomOrigin({ x: 50, y: 50 });
+                        break;
+                      case 'universe':
+                        setUniverseZoom(1);
+                        setUniversePan({ x: 0, y: 0 });
+                        setUniverseZoomOrigin({ x: 50, y: 50 });
+                        break;
+                    }
+                  }}
+                  className="p-2 bg-space-700 hover:bg-space-600 rounded-lg transition-colors"
+                  title="Resetear vista"
+                >
+                  <Home className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
             )}
@@ -537,9 +673,66 @@ export default function Galaxy() {
       {/* Universe View */}
       {viewLevel === 'universe' && (
         <Card title="Vista Universal - Selecciona una Galaxia" glowing>
-          <div className="relative bg-space-900/50 rounded-lg p-8 min-h-96 overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative w-96 h-96">
+          <div 
+            className="relative bg-space-900/50 rounded-lg min-h-96 overflow-hidden cursor-grab select-none"
+            style={{ height: '600px' }}
+          >
+            <div 
+              ref={universeViewRef}
+              className="absolute inset-0 flex items-center justify-center transition-transform duration-200"
+              style={{ 
+                transform: `translate(${universePan.x}px, ${universePan.y}px) scale(${universeZoom})`,
+                transformOrigin: `${universeZoomOrigin.x}% ${universeZoomOrigin.y}%`
+              }}
+            >
+              <div className="relative w-full h-full">
+                {/* Enhanced cosmic background */}
+                <div className="absolute inset-0">
+                  {/* Large cosmic structures */}
+                  <div className="absolute top-1/6 left-1/6 w-64 h-64 bg-gradient-radial from-purple-500/15 via-purple-500/8 to-transparent rounded-full blur-2xl" />
+                  <div className="absolute top-2/3 right-1/6 w-80 h-80 bg-gradient-radial from-blue-500/12 via-blue-500/6 to-transparent rounded-full blur-2xl" />
+                  <div className="absolute bottom-1/6 left-1/2 w-48 h-48 bg-gradient-radial from-pink-500/15 via-pink-500/8 to-transparent rounded-full blur-2xl" />
+                  
+                  {/* Cosmic web filaments */}
+                  <svg className="absolute inset-0 w-full h-full opacity-20">
+                    {Array.from({ length: 8 }, (_, i) => {
+                      const angle = (i / 8) * Math.PI * 2;
+                      const x1 = 50 + Math.cos(angle) * 20;
+                      const y1 = 50 + Math.sin(angle) * 20;
+                      const x2 = 50 + Math.cos(angle) * 45;
+                      const y2 = 50 + Math.sin(angle) * 45;
+                      return (
+                        <line
+                          key={`filament-${i}`}
+                          x1={`${x1}%`}
+                          y1={`${y1}%`}
+                          x2={`${x2}%`}
+                          y2={`${y2}%`}
+                          stroke="rgba(139,92,246,0.3)"
+                          strokeWidth="1"
+                          strokeDasharray="5,5"
+                        />
+                      );
+                    })}
+                  </svg>
+                  
+                  {/* Distant background galaxies */}
+                  {Array.from({ length: 50 }, (_, i) => (
+                    <div
+                      key={`bg-galaxy-${i}`}
+                      className="absolute w-1 h-1 bg-white/30 rounded-full blur-sm"
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        opacity: Math.random() * 0.5 + 0.1,
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Galaxy cluster positioning */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="relative w-96 h-96">
                 {universeData.map((galaxy) => (
                   <div
                     key={galaxy.id}
@@ -584,7 +777,15 @@ export default function Galaxy() {
                     </div>
                   </div>
                 ))}
+                  </div>
+                </div>
               </div>
+            </div>
+            
+            {/* Universe controls overlay */}
+            <div className="absolute bottom-4 left-4 text-xs text-gray-400 bg-space-900/80 px-3 py-2 rounded-lg backdrop-blur-sm">
+              <p>🖱️ Arrastra para mover • 🔍 Rueda para zoom</p>
+              <p>🌌 Explora galaxias distantes • ⭐ Haz clic para viajar</p>
             </div>
           </div>
         </Card>
@@ -593,16 +794,29 @@ export default function Galaxy() {
       {/* Galaxy View */}
       {viewLevel === 'galaxy' && (
         <Card title={`Galaxia ${currentGalaxy} - Vista Espiral`} glowing>
-          <div className="relative bg-space-900/50 rounded-lg p-8 min-h-96 overflow-hidden">
-            {/* Enhanced space background with nebulae */}
-            <div className="absolute inset-0">
+          <div 
+            className="relative bg-space-900/50 rounded-lg min-h-96 overflow-hidden cursor-grab select-none"
+            style={{ height: '600px' }}
+          >
+            <div 
+              ref={galaxyViewRef}
+              className="absolute inset-0 transition-transform duration-200"
+              style={{ 
+                transform: `translate(${galaxyPan.x}px, ${galaxyPan.y}px) scale(${galaxyZoom})`,
+                transformOrigin: `${galaxyZoomOrigin.x}% ${galaxyZoomOrigin.y}%`
+              }}
+            >
+              {/* Enhanced space background with nebulae */}
+              <div className="absolute inset-0">
               {/* Static nebula clouds */}
               <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-radial from-purple-500/20 via-purple-500/10 to-transparent rounded-full blur-xl" />
               <div className="absolute top-3/4 right-1/4 w-40 h-40 bg-gradient-radial from-blue-500/15 via-blue-500/8 to-transparent rounded-full blur-xl" />
               <div className="absolute bottom-1/4 left-1/3 w-24 h-24 bg-gradient-radial from-pink-500/20 via-pink-500/10 to-transparent rounded-full blur-xl" />
+              <div className="absolute top-1/6 right-1/3 w-28 h-28 bg-gradient-radial from-green-500/15 via-green-500/8 to-transparent rounded-full blur-xl" />
+              <div className="absolute bottom-1/3 right-1/6 w-36 h-36 bg-gradient-radial from-orange-500/12 via-orange-500/6 to-transparent rounded-full blur-xl" />
               
               {/* Static distant stars */}
-              {Array.from({ length: 150 }, (_, i) => (
+              {Array.from({ length: 300 }, (_, i) => (
                 <div
                   key={`bg-star-${i}`}
                   className="absolute w-px h-px bg-white rounded-full"
@@ -613,9 +827,9 @@ export default function Galaxy() {
                   }}
                 />
               ))}
-            </div>
+              </div>
 
-            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative w-full h-full max-w-2xl max-h-2xl">
                 {/* Static galactic center */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -628,6 +842,10 @@ export default function Galaxy() {
                     {/* Static accretion disk */}
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-orange-400/30 rounded-full" />
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 border border-yellow-400/20 rounded-full" />
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-orange-400/20 rounded-full" />
+                    
+                    {/* Galactic jets */}
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-32 bg-gradient-to-t from-transparent via-blue-400/30 to-transparent -translate-y-16" />
                   </div>
                 </div>
                 
@@ -719,6 +937,28 @@ export default function Galaxy() {
                   })}
                 </div>
 
+                {/* Additional galactic features */}
+                <div className="absolute inset-0">
+                  {/* Globular clusters */}
+                  {Array.from({ length: 12 }, (_, i) => {
+                    const angle = (i / 12) * Math.PI * 2;
+                    const radius = 280 + Math.random() * 50;
+                    const x = 50 + Math.cos(angle) * radius / 4;
+                    const y = 50 + Math.sin(angle) * radius / 4;
+                    return (
+                      <div
+                        key={`cluster-${i}`}
+                        className="absolute w-4 h-4 bg-gradient-radial from-yellow-400/40 via-orange-400/20 to-transparent rounded-full blur-sm"
+                        style={{
+                          left: `${x}%`,
+                          top: `${y}%`,
+                          transform: 'translate(-50%, -50%)',
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+
                 {/* Systems distribution along spiral arms */}
                 {galaxyData.map((system) => (
                   <div
@@ -769,6 +1009,7 @@ export default function Galaxy() {
                   </div>
                 ))}
               </div>
+              </div>
             </div>
             
             {/* Galaxy info overlay */}
@@ -785,8 +1026,18 @@ export default function Galaxy() {
             
             {/* Controls overlay */}
             <div className="absolute bottom-4 left-4 text-xs text-gray-400 bg-space-900/80 px-3 py-2 rounded-lg backdrop-blur-sm">
+              <p>🖱️ Arrastra para mover • 🔍 Rueda para zoom</p>
+              <p>📱 Pellizca para zoom • Toca sistemas para explorar</p>
               <p>🖱️ Haz clic en sistemas para explorar</p>
               <p>⭐ Los sistemas más brillantes tienen mayor actividad</p>
+            </div>
+            
+            {/* Galaxy center indicator */}
+            <div className="absolute top-4 left-4 bg-space-900/80 px-3 py-2 rounded-lg backdrop-blur-sm">
+              <div className="flex items-center space-x-2 text-xs text-gray-400">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+                <span>Centro Galáctico</span>
+              </div>
             </div>
           </div>
         </Card>

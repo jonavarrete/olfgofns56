@@ -122,6 +122,28 @@ export interface Alliance {
   points: number;
   rank: number;
   description: string;
+  banner?: {
+    elements: BannerElement[];
+    background: string;
+  };
+  foundedDate?: number;
+  leader?: string;
+  isPublic?: boolean;
+  requiresApproval?: boolean;
+}
+
+export interface BannerElement {
+  id: string;
+  type: 'shape' | 'symbol' | 'text';
+  shape?: 'circle' | 'square' | 'triangle' | 'star' | 'shield';
+  symbol?: 'crown' | 'sword' | 'lightning' | 'star' | 'shield';
+  text?: string;
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  rotation: number;
+  layer: number;
 }
 
 export interface GameState {

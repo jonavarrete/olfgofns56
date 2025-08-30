@@ -19,19 +19,7 @@ import {
   Zap
 } from 'lucide-react';
 
-interface BannerElement {
-  id: string;
-  type: 'shape' | 'symbol' | 'text';
-  shape?: 'circle' | 'square' | 'triangle' | 'star' | 'shield';
-  symbol?: 'crown' | 'sword' | 'lightning' | 'star' | 'shield';
-  text?: string;
-  x: number;
-  y: number;
-  size: number;
-  color: string;
-  rotation: number;
-  layer: number;
-}
+import { BannerElement } from '../../types/game';
 
 interface BannerCreatorProps {
   onSave: (bannerData: { elements: BannerElement[]; background: string }) => void;

@@ -69,6 +69,8 @@ export default function Galaxy() {
   const [animationTime, setAnimationTime] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const systemViewRef = useRef<HTMLDivElement>(null);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [zoomOrigin, setZoomOrigin] = useState({ x: 50, y: 50 });
 
   // Get player's current location
   const playerPlanet = player.planets[0];
@@ -96,28 +98,38 @@ export default function Galaxy() {
     let isPanning = false;
     let startX = 0;
     let startY = 0;
-    let translateX = 0;
-    let translateY = 0;
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
+      
+      // Calculate zoom origin based on mouse position
+      const rect = container.getBoundingClientRect();
+      const mouseX = ((e.clientX - rect.left) / rect.width) * 100;
+      const mouseY = ((e.clientY - rect.top) / rect.height) * 100;
+      
+      setZoomOrigin({ x: mouseX, y: mouseY });
+      
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
       setZoomLevel(prev => Math.max(0.3, Math.min(3, prev + delta)));
     };
 
     const handleMouseDown = (e: MouseEvent) => {
       isPanning = true;
-      startX = e.clientX - translateX;
-      startY = e.clientY - translateY;
+      startX = e.clientX - panOffset.x;
+      startY = e.clientY - panOffset.y;
       container.style.cursor = 'grabbing';
     };
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isPanning) return;
-      translateX = e.clientX - startX;
-      translateY = e.clientY - startY;
+      const newPanOffset = {
+        x: e.clientX - startX,
+        y: e.clientY - startY
+      };
+      setPanOffset(newPanOffset);
       if (systemViewRef.current) {
-        systemViewRef.current.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomLevel})`;
+        systemViewRef.current.style.transform = `translate(${newPanOffset.x}px, ${newPanOffset.y}px) scale(${zoomLevel})`;
+        systemViewRef.current.style.transformOrigin = `${zoomOrigin.x}% ${zoomOrigin.y}%`;
       }
     };
 
@@ -130,23 +142,35 @@ export default function Galaxy() {
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 1) {
         isPanning = true;
-        startX = e.touches[0].clientX - translateX;
-        startY = e.touches[0].clientY - translateY;
+        startX = e.touches[0].clientX - panOffset.x;
+        startY = e.touches[0].clientY - panOffset.y;
       }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault();
       if (e.touches.length === 1 && isPanning) {
-        translateX = e.touches[0].clientX - startX;
-        translateY = e.touches[0].clientY - startY;
+        const newPanOffset = {
+          x: e.touches[0].clientX - startX,
+          y: e.touches[0].clientY - startY
+        };
+        setPanOffset(newPanOffset);
         if (systemViewRef.current) {
-          systemViewRef.current.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomLevel})`;
+          systemViewRef.current.style.transform = `translate(${newPanOffset.x}px, ${newPanOffset.y}px) scale(${zoomLevel})`;
+          systemViewRef.current.style.transformOrigin = `${zoomOrigin.x}% ${zoomOrigin.y}%`;
         }
       } else if (e.touches.length === 2) {
         // Pinch to zoom
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
+        
+        // Calculate zoom origin based on touch center
+        const rect = container.getBoundingClientRect();
+        const centerX = ((touch1.clientX + touch2.clientX) / 2 - rect.left) / rect.width * 100;
+        const centerY = ((touch1.clientY + touch2.clientY) / 2 - rect.top) / rect.height * 100;
+        
+        setZoomOrigin({ x: centerX, y: centerY });
+        
         const distance = Math.sqrt(
           Math.pow(touch2.clientX - touch1.clientX, 2) + 
           Math.pow(touch2.clientY - touch1.clientY, 2)
@@ -188,7 +212,15 @@ export default function Galaxy() {
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [viewLevel, zoomLevel]);
+  }, [viewLevel, zoomLevel, panOffset, zoomOrigin]);
+
+  // Update transform when zoom level changes
+  useEffect(() => {
+    if (systemViewRef.current && viewLevel === 'system') {
+      systemViewRef.current.style.transform = `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`;
+      systemViewRef.current.style.transformOrigin = `${zoomOrigin.x}% ${zoomOrigin.y}%`;
+    }
+  }, [zoomLevel, panOffset, zoomOrigin, viewLevel]);
 
   // Generate universe data with realistic positioning
   const generateUniverseData = (): UniverseGalaxy[] => {
@@ -297,6 +329,8 @@ export default function Galaxy() {
   const navigateToLevel = (level: ViewLevel) => {
     setViewLevel(level);
     setZoomLevel(1);
+    setPanOffset({ x: 0, y: 0 });
+    setZoomOrigin({ x: 50, y: 50 });
     setSelectedPlanetPos(null);
     setSelectedMoonPos(null);
   };
@@ -642,8 +676,8 @@ export default function Galaxy() {
                 ref={systemViewRef}
                 className="absolute inset-0 transition-transform duration-200"
                 style={{ 
-                  transform: `scale(${zoomLevel})`,
-                  transformOrigin: 'center center'
+                  transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+                  transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%`
                 }}
               >
                 {/* Central Star */}

@@ -248,7 +248,7 @@ export default function Galaxy() {
   const generateSystemData = (): SystemPlanet[] => {
     const planets: SystemPlanet[] = [];
     for (let i = 1; i <= 15; i++) {
-      const hasPlayer = Math.random() > 0.6;
+      const hasPlayer = Math.random() > 0.7; // Reduced chance for inhabited planets
       const isOwnPlanet = hasPlayer && i === playerPosition && currentGalaxy === playerGalaxy && currentSystem === playerSystem;
       
       const orbitRadius = 80 + (i * 35);
@@ -667,7 +667,7 @@ export default function Galaxy() {
 
                 {/* Planets with realistic orbital motion */}
                 {systemData.map((planet) => {
-                  if (!planet.planet) return null;
+                  // Show all positions, whether inhabited or not
                   
                   const currentAngle = planet.currentAngle + (animationTime * planet.orbitSpeed);
                   const x = Math.cos(currentAngle) * planet.orbitRadius;
@@ -675,6 +675,7 @@ export default function Galaxy() {
                   
                   const isSelected = selectedPlanetPos === planet.position;
                   const isPlayerPlanet = planet.player?.isOwn;
+                  const isInhabited = !!planet.planet;
                   
                   return (
                     <div
@@ -689,27 +690,58 @@ export default function Galaxy() {
                     >
                       {/* Planet */}
                       <div className="relative">
-                        <div 
-                          className={`${getPlanetSize(planet)} rounded-full border-2 transition-all duration-300 group-hover:scale-125 ${
-                            isPlayerPlanet 
-                              ? 'border-neon-green shadow-[0_0_20px_rgba(16,185,129,0.8)] animate-pulse' 
-                              : isSelected
+                        {isInhabited ? (
+                          /* Inhabited Planet - Show PNG image */
+                          <div 
+                            className={`${getPlanetSize(planet)} rounded-full border-2 transition-all duration-300 group-hover:scale-125 overflow-hidden ${
+                              isPlayerPlanet 
+                                ? 'border-neon-green shadow-[0_0_20px_rgba(16,185,129,0.8)] animate-pulse' 
+                                : isSelected
+                                  ? 'border-neon-blue shadow-[0_0_15px_rgba(0,212,255,0.6)]'
+                                  : planet.player 
+                                    ? 'border-neon-purple shadow-[0_0_10px_rgba(139,92,246,0.4)]'
+                                    : 'border-gray-500'
+                            }`}
+                          >
+                            <img 
+                              src={`/images/planets/${planet.planet?.type}.png`}
+                              alt={planet.planet?.type}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                // Fallback to gradient if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.className += ` ${getPlanetColor(planet)}`;
+                                  const overlay = document.createElement('div');
+                                  overlay.className = 'w-full h-full rounded-full bg-gradient-to-br from-white/10 to-transparent';
+                                  parent.appendChild(overlay);
+                                }
+                              }}
+                            />
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/5 to-transparent" />
+                          </div>
+                        ) : (
+                          /* Uninhabited Planet - Show dashed circle with question mark */
+                          <div 
+                            className={`w-5 h-5 rounded-full border-2 border-dashed border-gray-500 transition-all duration-300 group-hover:scale-125 flex items-center justify-center ${
+                              isSelected
                                 ? 'border-neon-blue shadow-[0_0_15px_rgba(0,212,255,0.6)]'
-                                : planet.player 
-                                  ? 'border-neon-purple shadow-[0_0_10px_rgba(139,92,246,0.4)]'
-                                  : 'border-gray-500'
-                          } ${getPlanetColor(planet)}`}
-                        >
-                          <div className="w-full h-full rounded-full bg-gradient-to-br from-white/10 to-transparent" />
-                        </div>
+                                : 'hover:border-gray-400'
+                            }`}
+                          >
+                            <span className="text-gray-400 text-xs font-bold">?</span>
+                          </div>
+                        )}
 
                         {/* Moon */}
                         {planet.moon && (
                           <div 
-                            className={`absolute w-2 h-2 rounded-full border cursor-pointer transition-all duration-300 hover:scale-150 ${
+                            className={`absolute w-2 h-2 rounded-full border cursor-pointer transition-all duration-300 hover:scale-150 overflow-hidden ${
                               selectedMoonPos === planet.position
-                                ? 'bg-neon-blue border-neon-blue shadow-[0_0_8px_rgba(0,212,255,0.6)]'
-                                : 'bg-gray-400 border-gray-300'
+                                ? 'border-neon-blue shadow-[0_0_8px_rgba(0,212,255,0.6)]'
+                                : 'border-gray-300'
                             }`}
                             style={{
                               top: '-8px',
@@ -718,24 +750,46 @@ export default function Galaxy() {
                               transformOrigin: '6px 6px',
                             }}
                             onClick={(e) => handleMoonClick(planet, e)}
-                          />
+                          >
+                            <img 
+                              src={`/images/moons/${planet.moon.type}.png`}
+                              alt={planet.moon.type}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                // Fallback to solid color if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.className += ' bg-gray-400';
+                                }
+                              }}
+                            />
+                          </div>
                         )}
 
                         {/* Planet info tooltip */}
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                           <div className="bg-space-900/95 px-3 py-2 rounded-lg text-xs text-white whitespace-nowrap border border-space-600 shadow-xl">
-                            <p className="font-rajdhani font-medium text-neon-blue">{planet.planet.name}</p>
+                            <p className="font-rajdhani font-medium text-neon-blue">
+                              {planet.planet?.name || `Posición ${planet.position}`}
+                            </p>
                             <p className="text-gray-400">{currentGalaxy}:{currentSystem}:{planet.position}</p>
+                            {!planet.planet && (
+                              <p className="text-gray-500">Planeta no habitado</p>
+                            )}
                             {planet.player && (
                               <p className={`${isPlayerPlanet ? 'text-neon-green' : 'text-neon-purple'}`}>
                                 {planet.player.username}
                               </p>
                             )}
-                            <div className="flex items-center space-x-2 mt-1">
-                              <span className="text-gray-400">Tamaño: {planet.planet.size}</span>
-                              <span className="text-gray-400">•</span>
-                              <span className="text-gray-400">{planet.planet.temperature}°C</span>
-                            </div>
+                            {planet.planet && (
+                              <div className="flex items-center space-x-2 mt-1">
+                                <span className="text-gray-400">Tamaño: {planet.planet.size}</span>
+                                <span className="text-gray-400">•</span>
+                                <span className="text-gray-400">{planet.planet.temperature}°C</span>
+                              </div>
+                            )}
                             {planet.moon && (
                               <p className="text-gray-400">Luna: {planet.moon.size} ({planet.moon.type})</p>
                             )}
@@ -1013,11 +1067,27 @@ export default function Galaxy() {
                       {planet.planet ? (
                         <div className="flex items-center space-x-2">
                           <div 
-                            className={`w-6 h-6 rounded-full border ${
+                            className={`w-6 h-6 rounded-full border overflow-hidden ${
                               planet.player?.isOwn ? 'border-neon-green' : 'border-neon-blue'
-                            } ${getPlanetColor(planet)}`}
+                            }`}
                           >
-                            <div className="w-full h-full rounded-full bg-gradient-to-br from-white/10 to-transparent" />
+                            <img 
+                              src={`/images/planets/${planet.planet.type}.png`}
+                              alt={planet.planet.type}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                // Fallback to gradient if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.className += ` ${getPlanetColor(planet)}`;
+                                  const overlay = document.createElement('div');
+                                  overlay.className = 'w-full h-full rounded-full bg-gradient-to-br from-white/10 to-transparent';
+                                  parent.appendChild(overlay);
+                                }
+                              }}
+                            />
                           </div>
                           <div>
                             <p className="text-sm text-white">{planet.planet.name}</p>
@@ -1027,7 +1097,15 @@ export default function Galaxy() {
                           </div>
                         </div>
                       ) : (
-                        <div className="text-xs text-gray-500">Vacío</div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-6 h-6 rounded-full border-2 border-dashed border-gray-500 flex items-center justify-center">
+                            <span className="text-gray-400 text-xs font-bold">?</span>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500">Posición {planet.position}</p>
+                            <p className="text-xs text-gray-600">No habitado</p>
+                          </div>
+                        </div>
                       )}
                     </div>
 
@@ -1066,7 +1144,22 @@ export default function Galaxy() {
                           className="flex items-center space-x-1 cursor-pointer hover:text-neon-blue transition-colors"
                           onClick={(e) => handleMoonClick(planet, e)}
                         >
-                          <Moon className="w-3 h-3 text-gray-400" />
+                          <div className="w-3 h-3 rounded-full overflow-hidden border border-gray-300">
+                            <img 
+                              src={`/images/moons/${planet.moon.type}.png`}
+                              alt={planet.moon.type}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                // Fallback to Moon icon if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = '<div class="w-full h-full bg-gray-400 rounded-full"></div>';
+                                }
+                              }}
+                            />
+                          </div>
                           <span className="text-gray-400">{planet.moon.size}</span>
                         </div>
                       ) : (

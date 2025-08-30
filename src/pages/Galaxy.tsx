@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useGame } from '../context/GameContext';
 import Card from '../components/UI/Card';
 import Button from '../components/UI/Button';
@@ -56,6 +56,12 @@ interface SystemPlanet {
   currentAngle: number;
 }
 
+interface ViewState {
+  zoom: number;
+  pan: { x: number; y: number };
+  zoomOrigin: { x: number; y: number };
+}
+
 export default function Galaxy() {
   const { state, selectPlanet } = useGame();
   const { player } = state;
@@ -63,27 +69,38 @@ export default function Galaxy() {
   const [currentGalaxy, setCurrentGalaxy] = useState(1);
   const [currentSystem, setCurrentSystem] = useState(1);
   const [currentUniverse, setCurrentUniverse] = useState(1);
-  const [zoomLevel, setZoomLevel] = useState(1);
   const [selectedPlanetPos, setSelectedPlanetPos] = useState<number | null>(null);
   const [selectedMoonPos, setSelectedMoonPos] = useState<number | null>(null);
   const [animationTime, setAnimationTime] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Separate view states for each level
+  const [systemView, setSystemView] = useState<ViewState>({
+    zoom: 1,
+    pan: { x: 0, y: 0 },
+    zoomOrigin: { x: 50, y: 50 }
+  });
+  
+  const [galaxyView, setGalaxyView] = useState<ViewState>({
+    zoom: 1,
+    pan: { x: 0, y: 0 },
+    zoomOrigin: { x: 50, y: 50 }
+  });
+  
+  const [universeView, setUniverseView] = useState<ViewState>({
+    zoom: 1,
+    pan: { x: 0, y: 0 },
+    zoomOrigin: { x: 50, y: 50 }
+  });
+
+  // Refs for containers
   const systemViewRef = useRef<HTMLDivElement>(null);
   const galaxyViewRef = useRef<HTMLDivElement>(null);
   const universeViewRef = useRef<HTMLDivElement>(null);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
-  const [zoomOrigin, setZoomOrigin] = useState({ x: 50, y: 50 });
+  
+  // Dragging state
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  
-  // Separate zoom and pan states for each view
-  const [galaxyZoom, setGalaxyZoom] = useState(1);
-  const [galaxyPan, setGalaxyPan] = useState({ x: 0, y: 0 });
-  const [galaxyZoomOrigin, setGalaxyZoomOrigin] = useState({ x: 50, y: 50 });
-  
-  const [universeZoom, setUniverseZoom] = useState(1);
-  const [universePan, setUniversePan] = useState({ x: 0, y: 0 });
-  const [universeZoomOrigin, setUniverseZoomOrigin] = useState({ x: 50, y: 50 });
+  const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null);
 
   // Get player's current location
   const playerPlanet = player.planets[0];
@@ -105,156 +122,197 @@ export default function Galaxy() {
     return () => clearInterval(interval);
   }, [viewLevel]);
 
-  // Zoom and pan controls for all views
-  useEffect(() => {
-    const getActiveContainer = () => {
-      switch (viewLevel) {
-        case 'system': return containerRef.current;
-        case 'galaxy': return galaxyViewRef.current;
-        case 'universe': return universeViewRef.current;
-        default: return null;
-      }
-    };
+  // Get current view state
+  const getCurrentViewState = useCallback(() => {
+    switch (viewLevel) {
+      case 'system': return systemView;
+      case 'galaxy': return galaxyView;
+      case 'universe': return universeView;
+      default: return systemView;
+    }
+  }, [viewLevel, systemView, galaxyView, universeView]);
 
-    const container = getActiveContainer();
+  // Update current view state
+  const updateCurrentViewState = useCallback((updates: Partial<ViewState>) => {
+    switch (viewLevel) {
+      case 'system':
+        setSystemView(prev => ({ ...prev, ...updates }));
+        break;
+      case 'galaxy':
+        setGalaxyView(prev => ({ ...prev, ...updates }));
+        break;
+      case 'universe':
+        setUniverseView(prev => ({ ...prev, ...updates }));
+        break;
+    }
+  }, [viewLevel]);
+
+  // Get current container ref
+  const getCurrentContainer = useCallback(() => {
+    switch (viewLevel) {
+      case 'system': return systemViewRef.current;
+      case 'galaxy': return galaxyViewRef.current;
+      case 'universe': return universeViewRef.current;
+      default: return null;
+    }
+  }, [viewLevel]);
+
+  // Zoom functions
+  const handleZoomIn = useCallback(() => {
+    const currentState = getCurrentViewState();
+    updateCurrentViewState({
+      zoom: Math.min(5, currentState.zoom + 0.2)
+    });
+  }, [getCurrentViewState, updateCurrentViewState]);
+
+  const handleZoomOut = useCallback(() => {
+    const currentState = getCurrentViewState();
+    updateCurrentViewState({
+      zoom: Math.max(0.3, currentState.zoom - 0.2)
+    });
+  }, [getCurrentViewState, updateCurrentViewState]);
+
+  const resetView = useCallback(() => {
+    updateCurrentViewState({
+      zoom: 1,
+      pan: { x: 0, y: 0 },
+      zoomOrigin: { x: 50, y: 50 }
+    });
+  }, [updateCurrentViewState]);
+
+  // Mouse wheel zoom handler
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    
+    const container = getCurrentContainer();
     if (!container) return;
+    
+    // Calculate zoom origin based on mouse position
+    const rect = container.getBoundingClientRect();
+    const mouseX = ((e.clientX - rect.left) / rect.width) * 100;
+    const mouseY = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    const currentState = getCurrentViewState();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    const newZoom = Math.max(0.3, Math.min(5, currentState.zoom + delta));
+    
+    updateCurrentViewState({
+      zoom: newZoom,
+      zoomOrigin: { x: mouseX, y: mouseY }
+    });
+  }, [getCurrentContainer, getCurrentViewState, updateCurrentViewState]);
 
-    const getCurrentZoom = () => {
-      switch (viewLevel) {
-        case 'system': return zoomLevel;
-        case 'galaxy': return galaxyZoom;
-        case 'universe': return universeZoom;
-        default: return 1;
-      }
-    };
-
-    const setCurrentZoom = (zoom: number) => {
-      switch (viewLevel) {
-        case 'system': setZoomLevel(zoom); break;
-        case 'galaxy': setGalaxyZoom(zoom); break;
-        case 'universe': setUniverseZoom(zoom); break;
-      }
-    };
-
-    const getCurrentPan = () => {
-      switch (viewLevel) {
-        case 'system': return panOffset;
-        case 'galaxy': return galaxyPan;
-        case 'universe': return universePan;
-        default: return { x: 0, y: 0 };
-      }
-    };
-
-    const setCurrentPan = (pan: { x: number; y: number }) => {
-      switch (viewLevel) {
-        case 'system': setPanOffset(pan); break;
-        case 'galaxy': setGalaxyPan(pan); break;
-        case 'universe': setUniversePan(pan); break;
-      }
-    };
-
-    const setCurrentZoomOrigin = (origin: { x: number; y: number }) => {
-      switch (viewLevel) {
-        case 'system': setZoomOrigin(origin); break;
-        case 'galaxy': setGalaxyZoomOrigin(origin); break;
-        case 'universe': setUniverseZoomOrigin(origin); break;
-      }
-    };
-
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      
-      // Calculate zoom origin based on mouse position
-      const rect = container.getBoundingClientRect();
-      const mouseX = ((e.clientX - rect.left) / rect.width) * 100;
-      const mouseY = ((e.clientY - rect.top) / rect.height) * 100;
-      
-      setCurrentZoomOrigin({ x: mouseX, y: mouseY });
-      
-      const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      const currentZoom = getCurrentZoom();
-      setCurrentZoom(Math.max(0.3, Math.min(5, currentZoom + delta)));
-    };
-
-    const handleMouseDown = (e: MouseEvent) => {
-      setIsDragging(true);
-      const currentPan = getCurrentPan();
-      setDragStart({ x: e.clientX - currentPan.x, y: e.clientY - currentPan.y });
+  // Mouse drag handlers
+  const handleMouseDown = useCallback((e: MouseEvent) => {
+    if (e.button !== 0) return; // Only left mouse button
+    
+    setIsDragging(true);
+    const currentState = getCurrentViewState();
+    setDragStart({ 
+      x: e.clientX - currentState.pan.x, 
+      y: e.clientY - currentState.pan.y 
+    });
+    
+    const container = getCurrentContainer();
+    if (container) {
       container.style.cursor = 'grabbing';
-    };
+    }
+  }, [getCurrentViewState, getCurrentContainer]);
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
-      setCurrentPan({
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging) return;
+    
+    updateCurrentViewState({
+      pan: {
         x: e.clientX - dragStart.x,
         y: e.clientY - dragStart.y
-      });
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-      container.style.cursor = 'grab';
-    };
-
-    // Touch events for mobile
-    const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 1) {
-        setIsDragging(true);
-        const currentPan = getCurrentPan();
-        setDragStart({ 
-          x: e.touches[0].clientX - currentPan.x, 
-          y: e.touches[0].clientY - currentPan.y 
-        });
       }
-    };
+    });
+  }, [isDragging, dragStart, updateCurrentViewState]);
 
-    const handleTouchMove = (e: TouchEvent) => {
-      e.preventDefault();
-      if (e.touches.length === 1 && isDragging) {
-        setCurrentPan({
-          x: e.touches[0].clientX - dragStart.x,
-          y: e.touches[0].clientY - dragStart.y
-        });
-      } else if (e.touches.length === 2) {
-        // Pinch to zoom
-        const touch1 = e.touches[0];
-        const touch2 = e.touches[1];
-        
-        // Calculate zoom origin based on touch center
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+    const container = getCurrentContainer();
+    if (container) {
+      container.style.cursor = 'grab';
+    }
+  }, [getCurrentContainer]);
+
+  // Touch handlers for mobile
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      const currentState = getCurrentViewState();
+      setDragStart({ 
+        x: e.touches[0].clientX - currentState.pan.x, 
+        y: e.touches[0].clientY - currentState.pan.y 
+      });
+    } else if (e.touches.length === 2) {
+      // Initialize pinch zoom
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const distance = Math.sqrt(
+        Math.pow(touch2.clientX - touch1.clientX, 2) + 
+        Math.pow(touch2.clientY - touch1.clientY, 2)
+      );
+      setLastTouchDistance(distance);
+      
+      // Set zoom origin to touch center
+      const container = getCurrentContainer();
+      if (container) {
         const rect = container.getBoundingClientRect();
         const centerX = ((touch1.clientX + touch2.clientX) / 2 - rect.left) / rect.width * 100;
         const centerY = ((touch1.clientY + touch2.clientY) / 2 - rect.top) / rect.height * 100;
         
-        setCurrentZoomOrigin({ x: centerX, y: centerY });
-        
-        const distance = Math.sqrt(
-          Math.pow(touch2.clientX - touch1.clientX, 2) + 
-          Math.pow(touch2.clientY - touch1.clientY, 2)
-        );
-        
-        if (!container.dataset.lastDistance) {
-          container.dataset.lastDistance = distance.toString();
-          return;
-        }
-        
-        const lastDistance = parseFloat(container.dataset.lastDistance);
-        const scale = distance / lastDistance;
-        const currentZoom = getCurrentZoom();
-        setCurrentZoom(Math.max(0.3, Math.min(5, currentZoom * scale)));
-        container.dataset.lastDistance = distance.toString();
+        updateCurrentViewState({
+          zoomOrigin: { x: centerX, y: centerY }
+        });
       }
-    };
+    }
+  }, [getCurrentViewState, getCurrentContainer, updateCurrentViewState]);
 
-    const handleTouchEnd = () => {
-      setIsDragging(false);
-      delete container.dataset.lastDistance;
-    };
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    e.preventDefault();
+    
+    if (e.touches.length === 1 && isDragging) {
+      updateCurrentViewState({
+        pan: {
+          x: e.touches[0].clientX - dragStart.x,
+          y: e.touches[0].clientY - dragStart.y
+        }
+      });
+    } else if (e.touches.length === 2 && lastTouchDistance) {
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const distance = Math.sqrt(
+        Math.pow(touch2.clientX - touch1.clientX, 2) + 
+        Math.pow(touch2.clientY - touch1.clientY, 2)
+      );
+      
+      const scale = distance / lastTouchDistance;
+      const currentState = getCurrentViewState();
+      const newZoom = Math.max(0.3, Math.min(5, currentState.zoom * scale));
+      
+      updateCurrentViewState({ zoom: newZoom });
+      setLastTouchDistance(distance);
+    }
+  }, [isDragging, dragStart, lastTouchDistance, getCurrentViewState, updateCurrentViewState]);
 
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+    setLastTouchDistance(null);
+  }, []);
+
+  // Setup event listeners
+  useEffect(() => {
+    const container = getCurrentContainer();
+    if (!container) return;
+
+    // Add event listeners
     container.addEventListener('wheel', handleWheel, { passive: false });
     container.addEventListener('mousedown', handleMouseDown);
-    container.addEventListener('mousemove', handleMouseMove);
-    container.addEventListener('mouseup', handleMouseUp);
-    container.addEventListener('mouseleave', handleMouseUp);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
     container.addEventListener('touchstart', handleTouchStart, { passive: false });
     container.addEventListener('touchmove', handleTouchMove, { passive: false });
     container.addEventListener('touchend', handleTouchEnd);
@@ -262,35 +320,24 @@ export default function Galaxy() {
     return () => {
       container.removeEventListener('wheel', handleWheel);
       container.removeEventListener('mousedown', handleMouseDown);
-      container.removeEventListener('mousemove', handleMouseMove);
-      container.removeEventListener('mouseup', handleMouseUp);
-      container.removeEventListener('mouseleave', handleMouseUp);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
       container.removeEventListener('touchstart', handleTouchStart);
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [viewLevel, isDragging, dragStart, panOffset, galaxyPan, universePan]);
+  }, [viewLevel, handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
-  // Update transform when zoom level changes
+  // Apply transforms to current view
   useEffect(() => {
-    if (systemViewRef.current && viewLevel === 'system') {
-      systemViewRef.current.style.transform = `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`;
-      systemViewRef.current.style.transformOrigin = `${zoomOrigin.x}% ${zoomOrigin.y}%`;
-      systemViewRef.current.style.transition = isDragging ? 'none' : 'transform 0.2s ease-out';
-    }
-    
-    if (galaxyViewRef.current && viewLevel === 'galaxy') {
-      galaxyViewRef.current.style.transform = `translate(${galaxyPan.x}px, ${galaxyPan.y}px) scale(${galaxyZoom})`;
-      galaxyViewRef.current.style.transformOrigin = `${galaxyZoomOrigin.x}% ${galaxyZoomOrigin.y}%`;
-      galaxyViewRef.current.style.transition = isDragging ? 'none' : 'transform 0.2s ease-out';
-    }
-    
-    if (universeViewRef.current && viewLevel === 'universe') {
-      universeViewRef.current.style.transform = `translate(${universePan.x}px, ${universePan.y}px) scale(${universeZoom})`;
-      universeViewRef.current.style.transformOrigin = `${universeZoomOrigin.x}% ${universeZoomOrigin.y}%`;
-      universeViewRef.current.style.transition = isDragging ? 'none' : 'transform 0.2s ease-out';
-    }
-  }, [zoomLevel, panOffset, zoomOrigin, galaxyZoom, galaxyPan, galaxyZoomOrigin, universeZoom, universePan, universeZoomOrigin, viewLevel, isDragging]);
+    const container = getCurrentContainer();
+    if (!container) return;
+
+    const currentState = getCurrentViewState();
+    container.style.transform = `translate(${currentState.pan.x}px, ${currentState.pan.y}px) scale(${currentState.zoom})`;
+    container.style.transformOrigin = `${currentState.zoomOrigin.x}% ${currentState.zoomOrigin.y}%`;
+    container.style.transition = isDragging ? 'none' : 'transform 0.2s ease-out';
+  }, [getCurrentContainer, getCurrentViewState, isDragging]);
 
   // Generate universe data with realistic positioning
   const generateUniverseData = (): UniverseGalaxy[] => {
@@ -396,30 +443,11 @@ export default function Galaxy() {
     }
   }, [currentGalaxy, currentSystem, viewLevel]);
 
-  // Reset zoom and pan when changing views
+  // Reset selection when changing views
   const navigateToLevel = (level: ViewLevel) => {
     setViewLevel(level);
     setSelectedPlanetPos(null);
     setSelectedMoonPos(null);
-    
-    // Reset current view's zoom and pan
-    switch (level) {
-      case 'system':
-        setZoomLevel(1);
-        setPanOffset({ x: 0, y: 0 });
-        setZoomOrigin({ x: 50, y: 50 });
-        break;
-      case 'galaxy':
-        setGalaxyZoom(1);
-        setGalaxyPan({ x: 0, y: 0 });
-        setGalaxyZoomOrigin({ x: 50, y: 50 });
-        break;
-      case 'universe':
-        setUniverseZoom(1);
-        setUniversePan({ x: 0, y: 0 });
-        setUniverseZoomOrigin({ x: 50, y: 50 });
-        break;
-    }
   };
 
   const navigateGalaxy = (direction: 'prev' | 'next') => {
@@ -492,6 +520,8 @@ export default function Galaxy() {
     return 'w-7 h-7';
   };
 
+  const currentViewState = getCurrentViewState();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -561,66 +591,30 @@ export default function Galaxy() {
             </div>
 
             {/* Zoom Controls for all views */}
-            {(viewLevel === 'system' || viewLevel === 'galaxy' || viewLevel === 'universe') && (
-              <div className="flex items-center space-x-2 border-l border-space-600 pl-4">
-                <button
-                  onClick={() => {
-                    switch (viewLevel) {
-                      case 'system': setZoomLevel(Math.max(0.3, zoomLevel - 0.2)); break;
-                      case 'galaxy': setGalaxyZoom(Math.max(0.3, galaxyZoom - 0.2)); break;
-                      case 'universe': setUniverseZoom(Math.max(0.3, universeZoom - 0.2)); break;
-                    }
-                  }}
-                  className="p-2 bg-space-700 hover:bg-space-600 rounded-lg transition-colors"
-                >
-                  <ZoomOut className="w-4 h-4 text-gray-400" />
-                </button>
-                <span className="text-sm font-rajdhani font-medium text-white px-2 min-w-[60px] text-center">
-                  {Math.round((
-                    viewLevel === 'system' ? zoomLevel :
-                    viewLevel === 'galaxy' ? galaxyZoom :
-                    universeZoom
-                  ) * 100)}%
-                </span>
-                <button
-                  onClick={() => {
-                    switch (viewLevel) {
-                      case 'system': setZoomLevel(Math.min(5, zoomLevel + 0.2)); break;
-                      case 'galaxy': setGalaxyZoom(Math.min(5, galaxyZoom + 0.2)); break;
-                      case 'universe': setUniverseZoom(Math.min(5, universeZoom + 0.2)); break;
-                    }
-                  }}
-                  className="p-2 bg-space-700 hover:bg-space-600 rounded-lg transition-colors"
-                >
-                  <ZoomIn className="w-4 h-4 text-gray-400" />
-                </button>
-                <button
-                  onClick={() => {
-                    switch (viewLevel) {
-                      case 'system':
-                        setZoomLevel(1);
-                        setPanOffset({ x: 0, y: 0 });
-                        setZoomOrigin({ x: 50, y: 50 });
-                        break;
-                      case 'galaxy':
-                        setGalaxyZoom(1);
-                        setGalaxyPan({ x: 0, y: 0 });
-                        setGalaxyZoomOrigin({ x: 50, y: 50 });
-                        break;
-                      case 'universe':
-                        setUniverseZoom(1);
-                        setUniversePan({ x: 0, y: 0 });
-                        setUniverseZoomOrigin({ x: 50, y: 50 });
-                        break;
-                    }
-                  }}
-                  className="p-2 bg-space-700 hover:bg-space-600 rounded-lg transition-colors"
-                  title="Resetear vista"
-                >
-                  <Home className="w-4 h-4 text-gray-400" />
-                </button>
-              </div>
-            )}
+            <div className="flex items-center space-x-2 border-l border-space-600 pl-4">
+              <button
+                onClick={handleZoomOut}
+                className="p-2 bg-space-700 hover:bg-space-600 rounded-lg transition-colors"
+              >
+                <ZoomOut className="w-4 h-4 text-gray-400" />
+              </button>
+              <span className="text-sm font-rajdhani font-medium text-white px-2 min-w-[60px] text-center">
+                {Math.round(currentViewState.zoom * 100)}%
+              </span>
+              <button
+                onClick={handleZoomIn}
+                className="p-2 bg-space-700 hover:bg-space-600 rounded-lg transition-colors"
+              >
+                <ZoomIn className="w-4 h-4 text-gray-400" />
+              </button>
+              <button
+                onClick={resetView}
+                className="p-2 bg-space-700 hover:bg-space-600 rounded-lg transition-colors"
+                title="Resetear vista"
+              >
+                <Home className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
           </div>
 
           {/* Navigation Controls */}
@@ -679,11 +673,7 @@ export default function Galaxy() {
           >
             <div 
               ref={universeViewRef}
-              className="absolute inset-0 flex items-center justify-center transition-transform duration-200"
-              style={{ 
-                transform: `translate(${universePan.x}px, ${universePan.y}px) scale(${universeZoom})`,
-                transformOrigin: `${universeZoomOrigin.x}% ${universeZoomOrigin.y}%`
-              }}
+              className="absolute inset-0 flex items-center justify-center"
             >
               <div className="relative w-full h-full">
                 {/* Enhanced cosmic background */}
@@ -800,11 +790,7 @@ export default function Galaxy() {
           >
             <div 
               ref={galaxyViewRef}
-              className="absolute inset-0 transition-transform duration-200"
-              style={{ 
-                transform: `translate(${galaxyPan.x}px, ${galaxyPan.y}px) scale(${galaxyZoom})`,
-                transformOrigin: `${galaxyZoomOrigin.x}% ${galaxyZoomOrigin.y}%`
-              }}
+              className="absolute inset-0"
             >
               {/* Enhanced space background with nebulae */}
               <div className="absolute inset-0">
@@ -1048,17 +1034,12 @@ export default function Galaxy() {
         <>
           <Card title={`Sistema ${currentGalaxy}:${currentSystem} - Vista Orbital`} glowing>
             <div 
-              ref={containerRef}
               className="relative bg-space-900/50 rounded-lg min-h-96 overflow-hidden cursor-grab select-none"
               style={{ height: '600px' }}
             >
               <div 
                 ref={systemViewRef}
-                className="absolute inset-0 transition-transform duration-200"
-                style={{ 
-                  transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
-                  transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%`
-                }}
+                className="absolute inset-0"
               >
                 {/* Central Star */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">

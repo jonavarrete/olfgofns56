@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
+import { useProceduralContent } from '../hooks/useProceduralContent';
 import Card from '../components/UI/Card';
 import Button from '../components/UI/Button';
 import { 
@@ -14,30 +15,30 @@ import {
   Search,
   Calendar,
   Globe,
+  Rocket,
   Zap,
   Sword,
   MessageSquare,
   Package
 } from 'lucide-react';
 import { AlienRace } from '../types/game';
-import { alienRaces } from '../data/alienRaces';
 
 export default function GalacticGuide() {
   const { state } = useGame();
-  const [discoveredRaces, setDiscoveredRaces] = useState<AlienRace[]>(alienRaces);
-  const [totalRacesEncountered, setTotalRacesEncountered] = useState(alienRaces.length);
+  const { discoveredRaces, totalRacesEncountered, discoverRace: discoverRaceAction } = useProceduralContent();
   const [selectedRace, setSelectedRace] = useState<AlienRace | null>(null);
   const [raceFilter, setRaceFilter] = useState<'all' | 'discovered' | 'undiscovered'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | AlienRace['type']>('all');
 
-  const discoverRace = (raceId: string) => {
-    setDiscoveredRaces(prev => 
-      prev.map(race => 
-        race.id === raceId 
-          ? { ...race, discovered: true, discoveryDate: Date.now() }
-          : race
-      )
-    );
+  const getTraitIcon = (trait: string) => {
+    switch (trait) {
+      case 'technology': return Zap;
+      case 'military': return Sword;
+      case 'diplomacy': return MessageSquare;
+      case 'trade': return Package;
+      case 'expansion': return Globe;
+      default: return Star;
+    }
   };
 
   const filteredRaces = discoveredRaces.filter(race => {
@@ -72,17 +73,6 @@ export default function GalacticGuide() {
       case 'legendary': return 'text-neon-purple';
       case 'mythic': return 'text-neon-orange';
       default: return 'text-gray-400';
-    }
-  };
-
-  const getTraitIcon = (trait: string) => {
-    switch (trait) {
-      case 'technology': return Zap;
-      case 'military': return Sword;
-      case 'diplomacy': return MessageSquare;
-      case 'trade': return Package;
-      case 'expansion': return Globe;
-      default: return Star;
     }
   };
 
@@ -368,7 +358,7 @@ export default function GalacticGuide() {
                   <div className="border-t border-space-600 pt-4">
                     <Button
                       variant="primary"
-                      onClick={() => discoverRace(selectedRace.id)}
+                      onClick={() => discoverRaceAction(selectedRace.id)}
                       className="w-full"
                     >
                       <Search className="w-4 h-4 mr-2" />
@@ -389,7 +379,7 @@ export default function GalacticGuide() {
                 </p>
                 <Button
                   variant="primary"
-                  onClick={() => discoverRace(selectedRace.id)}
+                  onClick={() => discoverRaceAction(selectedRace.id)}
                 >
                   <Search className="w-4 h-4 mr-2" />
                   Iniciar Investigación

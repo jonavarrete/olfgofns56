@@ -5,14 +5,16 @@ interface CardProps {
   className?: string;
   title?: string;
   glowing?: boolean;
+  onClick?: () => void;
 }
 
-export default function Card({ children, className = '', title, glowing = false }: CardProps) {
+export default function Card({ children, className = '', title, glowing = false, onClick }: CardProps) {
   return (
     <div
+      onClick={onClick}
       className={`relative bg-card-gradient border border-space-600 rounded-lg backdrop-blur-sm transition-all duration-300 hover:border-neon-blue/30 z-10 ${
         glowing ? 'shadow-[0_0_20px_rgba(0,212,255,0.3)]' : ''
-      } ${className}`}
+      } ${onClick ? 'cursor-pointer' : ''} ${className}`}
     >
       {title && (
         <div className="relative p-4 border-b border-space-600">

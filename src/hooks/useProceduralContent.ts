@@ -131,6 +131,6 @@ export function useProceduralContent() {
     totalRacesEncountered,
     discoverRace,
     completeMission,
-    startMission,
+    startMission: startMission,
   };
 }

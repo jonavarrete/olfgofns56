@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
+import { useProceduralContent } from '../hooks/useProceduralContent';
 import Card from '../components/UI/Card';
 import Button from '../components/UI/Button';
 import { 
@@ -26,42 +27,15 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { PvEMission } from '../types/game';
-import { pveMissions } from '../data/pveMissions';
 
 export default function PvEMissions() {
   const { state } = useGame();
-  const [availableMissions, setAvailableMissions] = useState<PvEMission[]>(pveMissions);
+  const { availableMissions, startMission: startMissionAction } = useProceduralContent();
   const [selectedMission, setSelectedMission] = useState<PvEMission | null>(null);
   const [missionFilter, setMissionFilter] = useState<'all' | 'available' | 'active' | 'completed' | 'locked'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | PvEMission['type']>('all');
   const [difficultyFilter, setDifficultyFilter] = useState<'all' | PvEMission['difficulty']>('all');
 
-  const startMission = (missionId: string) => {
-    setAvailableMissions(prev =>
-      prev.map(mission =>
-        mission.id === missionId
-          ? { ...mission, status: 'active' as const, progress: 0 }
-          : mission
-      )
-    );
-
-    // Simulate mission progress
-    const progressInterval = setInterval(() => {
-      setAvailableMissions(prev =>
-        prev.map(mission => {
-          if (mission.id === missionId && mission.status === 'active') {
-            const newProgress = Math.min(100, mission.progress + Math.random() * 10 + 5);
-            if (newProgress >= 100) {
-              clearInterval(progressInterval);
-              return { ...mission, status: 'completed' as const, progress: 100, lastCompleted: Date.now() };
-            }
-            return { ...mission, progress: newProgress };
-          }
-          return mission;
-        })
-      );
-    }, 5000);
-  };
 
   const filteredMissions = availableMissions.filter(mission => {
     const statusMatch = missionFilter === 'all' || mission.status === missionFilter;
@@ -415,8 +389,8 @@ export default function PvEMissions() {
                   disabled={!canStart || selectedMission.status === 'active'}
                   onClick={() => {
                     if (canStart) {
-                      startMission(selectedMission.id);
-                      setSelectedMission({ ...selectedMission, status: 'active', progress: 0 });
+                      startMissionAction(selectedMission.id);
+                      startMissionAction(mission.id);
                     }
                   }}
                   className="flex-1"

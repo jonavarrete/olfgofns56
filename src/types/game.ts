@@ -227,7 +227,20 @@ export interface Message {
   content: string;
   timestamp: number;
   read: boolean;
-  type: 'combat' | 'spy' | 'transport' | 'system' | 'alliance';
+  type: 'combat' | 'spy' | 'transport' | 'system' | 'alliance' | 'pve_mission' | 'faction';
+  combatReport?: CombatReport;
+  missionData?: {
+    missionId: string;
+    missionName: string;
+    result: 'success' | 'failure' | 'partial';
+    rewards?: {
+      experience: number;
+      resources?: Resources;
+      technology?: string[];
+      alienRace?: string;
+    };
+  };
+  faction?: 'galactic_confederation' | 'democratic_order' | 'alien_race' | 'pirates' | 'traders';
 }
 
 export interface Notification {

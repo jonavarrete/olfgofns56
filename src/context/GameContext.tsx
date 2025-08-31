@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { GameState, Player, Planet, Mission, Notification, GameSettings } from '../types/game';
+import { DiplomaticPact } from '../types/game';
 import { 
   mockPlayer, 
   mockMissions, 
   mockRankings, 
   mockAlliances, 
-  mockMessages 
+  mockMessages,
+  mockDiplomaticPacts
 } from '../data/mockData';
 
 interface GameContextType {
@@ -21,6 +23,9 @@ interface GameContextType {
   updateSettings: (settings: GameSettings) => void;
   discoverAlienRace: (raceId: string) => void;
   completePvEMission: (missionId: string) => void;
+  proposePact: (pact: DiplomaticPact) => void;
+  signPact: (pactId: string, allianceId: string) => void;
+  cancelPact: (pactId: string) => void;
 }
 
 type GameAction = 
@@ -34,7 +39,10 @@ type GameAction =
   | { type: 'CLEAR_NOTIFICATIONS' }
   | { type: 'UPDATE_SETTINGS'; payload: GameSettings }
   | { type: 'DISCOVER_ALIEN_RACE'; payload: string }
-  | { type: 'COMPLETE_PVE_MISSION'; payload: string };
+  | { type: 'COMPLETE_PVE_MISSION'; payload: string }
+  | { type: 'PROPOSE_PACT'; payload: DiplomaticPact }
+  | { type: 'SIGN_PACT'; payload: { pactId: string; allianceId: string } }
+  | { type: 'CANCEL_PACT'; payload: string };
 
 const defaultSettings: GameSettings = {
   language: 'es',
@@ -68,6 +76,7 @@ const initialState: GameState = {
   messages: mockMessages,
   rankings: mockRankings,
   alliances: mockAlliances,
+  diplomaticPacts: mockDiplomaticPacts,
   notifications: [],
   settings: defaultSettings,
   combatReports: [],
@@ -143,6 +152,37 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         // This will be handled by the procedural content hook
       };
+    case 'PROPOSE_PACT':
+      return {
+        ...state,
+        diplomaticPacts: [...state.diplomaticPacts, action.payload]
+      };
+    case 'SIGN_PACT':
+      return {
+        ...state,
+        diplomaticPacts: state.diplomaticPacts.map(pact =>
+          pact.id === action.payload.pactId
+            ? {
+                ...pact,
+                signatures: {
+                  ...pact.signatures,
+                  [action.payload.allianceId === pact.alliance1 ? 'alliance1' : 'alliance2']: true
+                },
+                status: pact.signatures.alliance1 && pact.signatures.alliance2 ? 'active' as const : 'pending_signature' as const,
+                signedDate: pact.signatures.alliance1 && pact.signatures.alliance2 ? Date.now() : pact.signedDate
+              }
+            : pact
+        )
+      };
+    case 'CANCEL_PACT':
+      return {
+        ...state,
+        diplomaticPacts: state.diplomaticPacts.map(pact =>
+          pact.id === action.payload
+            ? { ...pact, status: 'cancelled' as const }
+            : pact
+        )
+      };
     default:
       return state;
   }
@@ -193,6 +233,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'COMPLETE_PVE_MISSION', payload: missionId });
   };
 
+  const proposePact = (pact: DiplomaticPact) => {
+    dispatch({ type: 'PROPOSE_PACT', payload: pact });
+  };
+
+  const signPact = (pactId: string, allianceId: string) => {
+    dispatch({ type: 'SIGN_PACT', payload: { pactId, allianceId } });
+  };
+
+  const cancelPact = (pactId: string) => {
+    dispatch({ type: 'CANCEL_PACT', payload: pactId });
+  };
+
   return (
     <GameContext.Provider value={{
       state,
@@ -207,6 +259,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       updateSettings,
       discoverAlienRace,
       completePvEMission,
+      proposePact,
+      signPact,
+      cancelPact,
     }}>
       {children}
     </GameContext.Provider>

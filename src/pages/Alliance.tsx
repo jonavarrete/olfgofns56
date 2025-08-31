@@ -4,6 +4,7 @@ import Card from '../components/UI/Card';
 import Button from '../components/UI/Button';
 import AllianceBanner from '../components/Alliance/AllianceBanner';
 import BannerCreator from '../components/Alliance/BannerCreator';
+import PactCreator from '../components/Alliance/PactCreator';
 import { 
   Users, 
   Crown, 
@@ -16,17 +17,24 @@ import {
   Target,
   Globe,
   X,
-  Check
+  Check,
+  FileText,
+  Clock,
+  AlertCircle,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
-import { Alliance as AllianceType, BannerElement } from '../types/game';
+import { Alliance as AllianceType, BannerElement, DiplomaticPact } from '../types/game';
 
 export default function Alliance() {
-  const { state } = useGame();
+  const { state, proposePact, signPact, cancelPact } = useGame();
   const { player, alliances } = state;
   const [selectedTab, setSelectedTab] = useState<'overview' | 'members' | 'diplomacy' | 'wars'>('overview');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showBannerCreator, setShowBannerCreator] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showPactCreator, setShowPactCreator] = useState(false);
+  const [selectedAllianceForPact, setSelectedAllianceForPact] = useState<AllianceType | null>(null);
   const [allianceForm, setAllianceForm] = useState({
     name: '',
     tag: '',
@@ -38,6 +46,14 @@ export default function Alliance() {
 
   const currentAlliance = alliances.find(a => a.name === player.alliance);;//false
   const isInAlliance = !!currentAlliance;
+
+  // Get pacts involving current alliance
+  const currentAlliancePacts = state.diplomaticPacts.filter(pact => 
+    currentAlliance && (pact.alliance1 === currentAlliance.id || pact.alliance2 === currentAlliance.id)
+  );
+
+  const activePacts = currentAlliancePacts.filter(pact => pact.status === 'active');
+  const pendingPacts = currentAlliancePacts.filter(pact => pact.status === 'pending_signature' || pact.status === 'proposed');
 
   const tabs = [
     { key: 'overview' as const, name: 'Resumen', icon: Users },
@@ -106,6 +122,59 @@ export default function Alliance() {
     }
   };
 
+  const handleProposePact = (targetAlliance: AllianceType) => {
+    setSelectedAllianceForPact(targetAlliance);
+    setShowPactCreator(true);
+  };
+
+  const handlePactProposal = (pact: DiplomaticPact) => {
+    proposePact(pact);
+    setShowPactCreator(false);
+    setSelectedAllianceForPact(null);
+    alert('¡Pacto propuesto exitosamente! La otra alianza debe firmarlo para que entre en vigor.');
+  };
+
+  const handleSignPact = (pactId: string) => {
+    if (!currentAlliance) return;
+    signPact(pactId, currentAlliance.id);
+    alert('¡Pacto firmado exitosamente!');
+  };
+
+  const handleCancelPact = (pactId: string) => {
+    if (confirm('¿Estás seguro de que quieres cancelar este pacto?')) {
+      cancelPact(pactId);
+      alert('Pacto cancelado.');
+    }
+  };
+
+  const getPactStatusColor = (status: DiplomaticPact['status']) => {
+    switch (status) {
+      case 'active': return 'text-neon-green';
+      case 'pending_signature': return 'text-neon-orange';
+      case 'proposed': return 'text-neon-blue';
+      case 'expired': return 'text-gray-400';
+      case 'cancelled': return 'text-neon-red';
+      default: return 'text-gray-400';
+    }
+  };
+
+  const getPactStatusIcon = (status: DiplomaticPact['status']) => {
+    switch (status) {
+      case 'active': return CheckCircle;
+      case 'pending_signature': return Clock;
+      case 'proposed': return AlertCircle;
+      case 'expired': return XCircle;
+      case 'cancelled': return XCircle;
+      default: return AlertCircle;
+    }
+  };
+
+  const getOtherAlliance = (pact: DiplomaticPact) => {
+    if (!currentAlliance) return null;
+    const otherAllianceId = pact.alliance1 === currentAlliance.id ? pact.alliance2 : pact.alliance1;
+    return alliances.find(a => a.id === otherAllianceId);
+  };
+
   if (showBannerCreator) {
     return (
       <BannerCreator
@@ -115,6 +184,19 @@ export default function Alliance() {
         }}
         onCancel={() => setShowBannerCreator(false)}
         initialData={bannerData || undefined}
+      />
+    );
+  }
+
+  if (showPactCreator && selectedAllianceForPact) {
+    return (
+      <PactCreator
+        targetAlliance={selectedAllianceForPact}
+        onClose={() => {
+          setShowPactCreator(false);
+          setSelectedAllianceForPact(null);
+        }}
+        onPropose={handlePactProposal}
       />
     );
   }
@@ -742,85 +824,275 @@ export default function Alliance() {
       {selectedTab === 'diplomacy' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card title="Relaciones Diplomáticas">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-neon-green/10 border border-neon-green/30 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Shield className="w-5 h-5 text-neon-green" />
-                  <div>
-                    <p className="text-sm font-rajdhani font-semibold text-white">
-                      Star Traders
-                    </p>
-                    <p className="text-xs text-gray-400">Alianza</p>
-                  </div>
-                </div>
-                <span className="px-2 py-1 bg-neon-green/20 text-neon-green rounded text-xs">
-                  Aliados
-                </span>
+            <div className="space-y-4 mb-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-rajdhani font-semibold text-white">Otras Alianzas</h4>
+                <Button variant="primary" size="sm">
+                  <FileText className="w-4 h-4 mr-1" />
+                  Nuevo Pacto
+                </Button>
               </div>
-
-              <div className="flex items-center justify-between p-3 bg-space-700/30 border border-space-600 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Globe className="w-5 h-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm font-rajdhani font-semibold text-white">
-                      Cosmic Empire
-                    </p>
-                    <p className="text-xs text-gray-400">Neutrales</p>
+              
+              {alliances
+                .filter(alliance => alliance.id !== currentAlliance?.id)
+                .slice(0, 4)
+                .map((alliance) => {
+                  const existingPact = activePacts.find(pact => 
+                    pact.alliance1 === alliance.id || pact.alliance2 === alliance.id
+                  );
+                  
+                  return (
+                    <div key={alliance.id} className="flex items-center justify-between p-3 bg-space-700/30 border border-space-600 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-neon-purple/30 to-neon-blue/30 rounded flex items-center justify-center">
+                          {alliance.banner ? (
+                            <AllianceBanner
+                              elements={alliance.banner.elements}
+                              background={alliance.banner.background}
+                              width={32}
+                              height={24}
+                              className="rounded"
+                            />
+                          ) : (
+                            <Users className="w-4 h-4 text-neon-purple" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-rajdhani font-semibold text-white">
+                            {alliance.name}
+                          </p>
+                          <p className="text-xs text-gray-400">[{alliance.tag}]</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {existingPact ? (
+                          <div className="flex items-center space-x-2">
+                            <div className="flex flex-wrap gap-1">
+                              {existingPact.types.slice(0, 2).map(type => (
+                                <span
+                                  key={type}
+                                  className="px-2 py-1 bg-neon-green/20 text-neon-green rounded text-xs font-rajdhani"
+                                >
+                                  {type === 'non_aggression' ? 'No Agresión' :
+                                   type === 'trade_agreement' ? 'Comercial' :
+                                   type === 'military_alliance' ? 'Militar' :
+                                   type === 'research_cooperation' ? 'Investigación' :
+                                   type === 'mutual_defense' ? 'Defensa' :
+                                   'Recursos'}
+                                </span>
+                              ))}
+                              {existingPact.types.length > 2 && (
+                                <span className="px-2 py-1 bg-gray-500/20 text-gray-400 rounded text-xs font-rajdhani">
+                                  +{existingPact.types.length - 2}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <Button 
+                            variant="secondary" 
+                            size="sm"
+                            onClick={() => handleProposePact(alliance)}
+                          >
+                            Proponer Pacto
+                          </Button>
+                        )}
+                      </div>
                   </div>
-                </div>
-                <span className="px-2 py-1 bg-gray-500/20 text-gray-400 rounded text-xs">
-                  Neutral
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-neon-red/10 border border-neon-red/30 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Target className="w-5 h-5 text-neon-red" />
-                  <div>
-                    <p className="text-sm font-rajdhani font-semibold text-white">
-                      Dark Empire
-                    </p>
-                    <p className="text-xs text-gray-400">Enemigos</p>
-                  </div>
-                </div>
-                <span className="px-2 py-1 bg-neon-red/20 text-neon-red rounded text-xs">
-                  Guerra
-                </span>
-              </div>
+                );
+              })}
             </div>
           </Card>
 
           <Card title="Pactos y Tratados">
             <div className="space-y-4">
-              <div className="p-3 bg-space-700/30 rounded-lg border border-space-600">
-                <h4 className="font-rajdhani font-semibold text-white mb-2">
-                  Pacto de No Agresión
-                </h4>
-                <p className="text-sm text-gray-400 mb-2">
-                  Con Star Traders • Vigente hasta: 15 días
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-neon-green">Activo</span>
-                  <Button variant="secondary" size="sm">
-                    Ver Detalles
-                  </Button>
-                </div>
-              </div>
+              {/* Active Pacts */}
+              {activePacts.length > 0 && (
+                <div>
+                  <h4 className="font-rajdhani font-semibold text-white mb-3">Pactos Activos</h4>
+                  <div className="space-y-3">
+                    {activePacts.map((pact) => {
+                      const otherAlliance = getOtherAlliance(pact);
+                      const StatusIcon = getPactStatusIcon(pact.status);
+                      const daysRemaining = pact.expirationDate ? 
+                        Math.ceil((pact.expirationDate - Date.now()) / (1000 * 60 * 60 * 24)) : null;
 
-              <div className="p-3 bg-space-700/30 rounded-lg border border-space-600">
-                <h4 className="font-rajdhani font-semibold text-white mb-2">
-                  Acuerdo Comercial
-                </h4>
-                <p className="text-sm text-gray-400 mb-2">
-                  Intercambio de recursos con descuento del 15%
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-neon-blue">Pendiente</span>
-                  <Button variant="primary" size="sm">
-                    Firmar
-                  </Button>
+                      return (
+                        <div key={pact.id} className="p-4 bg-space-700/30 rounded-lg border border-space-600">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <div className="flex items-center space-x-2 mb-1">
+                                <StatusIcon className={`w-4 h-4 ${getPactStatusColor(pact.status)}`} />
+                                <h5 className="font-rajdhani font-semibold text-white">
+                                  {pact.name}
+                                </h5>
+                              </div>
+                              <p className="text-sm text-gray-400">
+                                Con {otherAlliance?.name} [{otherAlliance?.tag}]
+                              </p>
+                              {daysRemaining && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Vigente por {daysRemaining} días más
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button variant="secondary" size="sm">
+                                Ver Detalles
+                              </Button>
+                              <Button 
+                                variant="danger" 
+                                size="sm"
+                                onClick={() => handleCancelPact(pact.id)}
+                              >
+                                Cancelar
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {pact.types.map(type => (
+                              <span
+                                key={type}
+                                className="px-2 py-1 bg-neon-green/20 text-neon-green rounded text-xs font-rajdhani font-medium"
+                              >
+                                {type === 'non_aggression' ? 'No Agresión' :
+                                 type === 'trade_agreement' ? 'Comercial' :
+                                 type === 'military_alliance' ? 'Militar' :
+                                 type === 'research_cooperation' ? 'Investigación' :
+                                 type === 'mutual_defense' ? 'Defensa Mutua' :
+                                 'Intercambio de Recursos'}
+                              </span>
+                            ))}
+                          </div>
+
+                          <p className="text-sm text-gray-300">
+                            {pact.terms.description}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Pending Pacts */}
+              {pendingPacts.length > 0 && (
+                <div>
+                  <h4 className="font-rajdhani font-semibold text-white mb-3">Pactos Pendientes</h4>
+                  <div className="space-y-3">
+                    {pendingPacts.map((pact) => {
+                      const otherAlliance = getOtherAlliance(pact);
+                      const StatusIcon = getPactStatusIcon(pact.status);
+                      const needsSignature = currentAlliance && 
+                        ((pact.alliance1 === currentAlliance.id && !pact.signatures.alliance1) ||
+                         (pact.alliance2 === currentAlliance.id && !pact.signatures.alliance2));
+
+                      return (
+                        <div key={pact.id} className="p-4 bg-neon-orange/10 border border-neon-orange/30 rounded-lg">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <div className="flex items-center space-x-2 mb-1">
+                                <StatusIcon className={`w-4 h-4 ${getPactStatusColor(pact.status)}`} />
+                                <h5 className="font-rajdhani font-semibold text-white">
+                                  {pact.name}
+                                </h5>
+                              </div>
+                              <p className="text-sm text-gray-400">
+                                {pact.proposedBy === currentAlliance?.id ? 'Propuesto por ti' : `Propuesto por ${otherAlliance?.name}`}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Hace {Math.floor((Date.now() - pact.proposedDate) / (1000 * 60 * 60 * 24))} días
+                              </p>
+                            </div>
+                            <div className="flex space-x-2">
+                              {needsSignature && (
+                                <Button 
+                                  variant="primary" 
+                                  size="sm"
+                                  onClick={() => handleSignPact(pact.id)}
+                                >
+                                  <Check className="w-4 h-4 mr-1" />
+                                  Firmar
+                                </Button>
+                              )}
+                              <Button variant="secondary" size="sm">
+                                Ver Detalles
+                              </Button>
+                              <Button 
+                                variant="danger" 
+                                size="sm"
+                                onClick={() => handleCancelPact(pact.id)}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {pact.types.map(type => (
+                              <span
+                                key={type}
+                                className="px-2 py-1 bg-neon-orange/20 text-neon-orange rounded text-xs font-rajdhani font-medium"
+                              >
+                                {type === 'non_aggression' ? 'No Agresión' :
+                                 type === 'trade_agreement' ? 'Comercial' :
+                                 type === 'military_alliance' ? 'Militar' :
+                                 type === 'research_cooperation' ? 'Investigación' :
+                                 type === 'mutual_defense' ? 'Defensa Mutua' :
+                                 'Intercambio de Recursos'}
+                              </span>
+                            ))}
+                          </div>
+
+                          <p className="text-sm text-gray-300">
+                            {pact.terms.description}
+                          </p>
+
+                          {/* Signature Status */}
+                          <div className="mt-3 pt-3 border-t border-space-600">
+                            <div className="flex items-center justify-between text-xs">
+                              <div className="flex items-center space-x-4">
+                                <div className="flex items-center space-x-1">
+                                  {pact.signatures.alliance1 ? (
+                                    <CheckCircle className="w-3 h-3 text-neon-green" />
+                                  ) : (
+                                    <Clock className="w-3 h-3 text-neon-orange" />
+                                  )}
+                                  <span className="text-gray-400">
+                                    {alliances.find(a => a.id === pact.alliance1)?.tag}
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  {pact.signatures.alliance2 ? (
+                                    <CheckCircle className="w-3 h-3 text-neon-green" />
+                                  ) : (
+                                    <Clock className="w-3 h-3 text-neon-orange" />
+                                  )}
+                                  <span className="text-gray-400">
+                                    {alliances.find(a => a.id === pact.alliance2)?.tag}
+                                  </span>
+                                </div>
+                              </div>
+                              <span className="text-gray-400">
+                                Duración: {pact.duration} días
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {activePacts.length === 0 && pendingPacts.length === 0 && (
+                <div className="text-center py-8 text-gray-400">
+                  <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No hay pactos diplomáticos</p>
+                  <p className="text-sm mt-1">Propón pactos con otras alianzas para obtener beneficios mutuos</p>
+                </div>
+              )}
             </div>
           </Card>
         </div>

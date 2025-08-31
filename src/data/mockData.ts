@@ -1,4 +1,5 @@
 import { Player, Planet, Buildings, Research, FleetShips, Resources, Mission, Alliance, Message } from '../types/game';
+import { DiplomaticPact } from '../types/game';
 
 export const mockResources: Resources = {
   metal: 150000,
@@ -255,4 +256,125 @@ export const mockMessages: Message[] = [
     read: false,
     type: 'combat',
   },
+];
+
+export const mockDiplomaticPacts: DiplomaticPact[] = [
+  {
+    id: '1',
+    name: 'Pacto de Cooperación Galáctica',
+    alliance1: '1', // Galactic Federation
+    alliance2: '3', // Star Traders
+    types: ['non_aggression', 'trade_agreement', 'research_cooperation'],
+    status: 'active',
+    proposedBy: '1',
+    proposedDate: Date.now() - 86400000 * 30,
+    signedDate: Date.now() - 86400000 * 25,
+    expirationDate: Date.now() + 86400000 * 60,
+    duration: 90,
+    terms: {
+      description: 'Pacto integral de cooperación que incluye no agresión, comercio preferencial y colaboración en investigación.',
+      conditions: [
+        'Prohibido atacar territorios de la alianza firmante',
+        'Descuento del 20% en intercambios comerciales',
+        'Compartir avances en tecnologías de nivel básico',
+        'Asistencia mutua en caso de ataques de terceros'
+      ],
+      penalties: [
+        'Ruptura automática del pacto por agresión',
+        'Compensación de 500,000 recursos por violación comercial',
+        'Bloqueo diplomático por 30 días'
+      ],
+      renewalOptions: 'manual'
+    },
+    signatures: {
+      alliance1: true,
+      alliance2: true
+    },
+    benefits: {
+      tradeDiscount: 20,
+      researchBonus: 10,
+      diplomaticImmunity: true
+    },
+    restrictions: {
+      noAttackZones: ['2:4:*', '3:1:*'],
+      exclusivityClauses: ['No pactos militares con Dark Empire']
+    }
+  },
+  {
+    id: '2',
+    name: 'Propuesta de Alianza Militar',
+    alliance1: '1', // Galactic Federation
+    alliance2: '3', // Star Traders
+    types: ['military_alliance', 'mutual_defense'],
+    status: 'pending_signature',
+    proposedBy: '1',
+    proposedDate: Date.now() - 86400000 * 3,
+    duration: 180,
+    terms: {
+      description: 'Alianza militar completa con defensa mutua y operaciones coordinadas.',
+      conditions: [
+        'Asistencia militar obligatoria en caso de ataque',
+        'Coordinación de ataques contra enemigos comunes',
+        'Compartir inteligencia militar',
+        'Acceso a bases militares aliadas'
+      ],
+      penalties: [
+        'Exclusión de futuras alianzas por 6 meses',
+        'Compensación militar equivalente a daños'
+      ],
+      renewalOptions: 'automatic'
+    },
+    signatures: {
+      alliance1: true,
+      alliance2: false
+    },
+    benefits: {
+      militarySupport: {
+        fleetSharing: true,
+        coordinatedAttacks: true,
+        defenseAssistance: true
+      }
+    },
+    restrictions: {
+      exclusivityClauses: ['No pactos con alianzas enemigas', 'Consulta obligatoria para declaraciones de guerra']
+    }
+  },
+  {
+    id: '3',
+    name: 'Acuerdo de Intercambio de Recursos',
+    alliance1: '1', // Galactic Federation
+    alliance2: '2', // Dark Empire (proposed but not signed)
+    types: ['trade_agreement', 'resource_sharing'],
+    status: 'proposed',
+    proposedBy: '2',
+    proposedDate: Date.now() - 86400000 * 1,
+    duration: 45,
+    terms: {
+      description: 'Acuerdo comercial limitado para intercambio de recursos específicos.',
+      conditions: [
+        'Intercambio semanal de 100K metal por 50K cristal',
+        'Rutas comerciales protegidas',
+        'Precios fijos durante la vigencia del acuerdo'
+      ],
+      penalties: [
+        'Multa del 50% del valor comercial por incumplimiento'
+      ],
+      renewalOptions: 'manual'
+    },
+    signatures: {
+      alliance1: false,
+      alliance2: true
+    },
+    benefits: {
+      tradeDiscount: 15,
+      resourceSharing: {
+        metal: 100000,
+        crystal: 50000,
+        deuterium: 25000
+      }
+    },
+    restrictions: {
+      tradeLimitations: ['Solo recursos básicos', 'Máximo 500K por semana']
+    }
+  }
 ];

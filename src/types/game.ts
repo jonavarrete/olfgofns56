@@ -132,6 +132,65 @@ export interface Alliance {
   requiresApproval?: boolean;
 }
 
+export interface DiplomaticPact {
+  id: string;
+  name: string;
+  alliance1: string; // Alliance ID
+  alliance2: string; // Alliance ID
+  types: PactType[];
+  status: 'proposed' | 'pending_signature' | 'active' | 'expired' | 'cancelled';
+  proposedBy: string; // Alliance ID
+  proposedDate: number;
+  signedDate?: number;
+  expirationDate?: number;
+  duration: number; // in days
+  terms: PactTerms;
+  signatures: {
+    alliance1: boolean;
+    alliance2: boolean;
+  };
+  benefits: PactBenefits;
+  restrictions: PactRestrictions;
+}
+
+export type PactType = 
+  | 'non_aggression'
+  | 'trade_agreement'
+  | 'military_alliance'
+  | 'research_cooperation'
+  | 'mutual_defense'
+  | 'resource_sharing';
+
+export interface PactTerms {
+  description: string;
+  conditions: string[];
+  penalties: string[];
+  renewalOptions: 'automatic' | 'manual' | 'none';
+}
+
+export interface PactBenefits {
+  tradeDiscount?: number; // percentage
+  resourceSharing?: {
+    metal: number;
+    crystal: number;
+    deuterium: number;
+  };
+  militarySupport?: {
+    fleetSharing: boolean;
+    coordinatedAttacks: boolean;
+    defenseAssistance: boolean;
+  };
+  researchBonus?: number; // percentage
+  diplomaticImmunity?: boolean;
+}
+
+export interface PactRestrictions {
+  noAttackZones?: string[]; // coordinates
+  tradeLimitations?: string[];
+  militaryLimitations?: string[];
+  exclusivityClauses?: string[];
+}
+
 export interface BannerElement {
   id: string;
   type: 'shape' | 'symbol' | 'text';
@@ -153,6 +212,7 @@ export interface GameState {
   messages: Message[];
   rankings: Player[];
   alliances: Alliance[];
+  diplomaticPacts: DiplomaticPact[];
   notifications: Notification[];
   settings: GameSettings;
   combatReports: CombatReport[];

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { User, LogOut, Globe } from 'lucide-react';
+import { Gem } from 'lucide-react';
 import ResourceDisplay from '../UI/ResourceDisplay';
 import PlanetSelector from '../UI/PlanetSelector';
 import NotificationCenter from '../UI/NotificationCenter';
@@ -15,6 +16,14 @@ export default function Header() {
         <div className="flex items-center space-x-6">
           <PlanetSelector />
           <ResourceDisplay resources={selectedPlanet.resources} showDebris={true} />
+          
+          {/* Dark Matter Display */}
+          <div className="flex items-center space-x-2 px-3 py-2 bg-neon-purple/20 rounded-lg border border-neon-purple/30">
+            <Gem className="w-4 h-4 text-neon-purple" />
+            <span className="text-neon-purple font-orbitron font-bold">
+              {player.officers.darkMatter.toLocaleString()}
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center space-x-4">

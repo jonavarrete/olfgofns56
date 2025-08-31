@@ -14,7 +14,8 @@ import {
   Book,
   Calculator,
   Target,
-  Store
+  Store,
+  Crown
 } from 'lucide-react';
 
 const navigation = [
@@ -23,6 +24,7 @@ const navigation = [
   { name: 'Investigación', href: '/research', icon: FlaskConical },
   { name: 'Astillero', href: '/shipyard', icon: Rocket },
   { name: 'Flota', href: '/fleet', icon: Swords },
+  { name: 'Oficiales', href: '/officers', icon: Crown },
   { name: 'Galaxia', href: '/galaxy', icon: Globe },
   { name: 'Comercio', href: '/trade', icon: Store },
   { name: 'Simulador', href: '/simulator', icon: Calculator },

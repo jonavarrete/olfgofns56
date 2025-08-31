@@ -18,6 +18,7 @@ import Settings from './pages/Settings';
 import GalacticGuide from './pages/GalacticGuide';
 import PvEMissions from './pages/PvEMissions';
 import Trade from './pages/Trade';
+import Officers from './pages/Officers';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
                   <Route path="/research" element={<Research />} />
                   <Route path="/shipyard" element={<Shipyard />} />
                   <Route path="/fleet" element={<Fleet />} />
+                  <Route path="/officers" element={<Officers />} />
                   <Route path="/galaxy" element={<Galaxy />} />
                   <Route path="/trade" element={<Trade />} />
                   <Route path="/simulator" element={<Simulator />} />

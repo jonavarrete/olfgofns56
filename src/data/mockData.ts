@@ -1,5 +1,7 @@
 import { Player, Planet, Buildings, Research, FleetShips, Resources, Mission, Alliance, Message } from '../types/game';
 import { DiplomaticPact } from '../types/game';
+import { OfficerState } from '../types/officers';
+import { baseOfficers } from './officersData';
 
 export const mockResources: Resources = {
   metal: 150000,
@@ -61,6 +63,32 @@ export const mockFleet: FleetShips = {
   battlecruiser: 5,
 };
 
+export const mockOfficerState: OfficerState = {
+  officers: [
+    {
+      ...baseOfficers[0], // Comandante
+      id: '1',
+      rank: 3,
+      active: true,
+      hiredDate: Date.now() - 86400000 * 30,
+      experience: 3500,
+      experienceToNext: 1500,
+    },
+    {
+      ...baseOfficers[1], // Almirante
+      id: '2',
+      rank: 2,
+      active: true,
+      hiredDate: Date.now() - 86400000 * 15,
+      experience: 1800,
+      experienceToNext: 700,
+    }
+  ],
+  darkMatter: 1250,
+  activeOfficers: ['1', '2'],
+  officerSlots: 8,
+  usedSlots: 2,
+};
 export const mockPlanets: Planet[] = [
   {
     id: '1',
@@ -137,6 +165,7 @@ export const mockPlayer: Player = {
   resources: mockResources,
   research: mockResearch,
   fleet: mockFleet,
+  officers: mockOfficerState,
 };
 
 export const mockMissions: Mission[] = [

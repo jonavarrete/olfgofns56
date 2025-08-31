@@ -11,12 +11,15 @@ import {
   FlaskConical,
   Target,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Wrench,
+  Hammer,
+  Factory
 } from 'lucide-react';
 
 export default function Dashboard() {
   const { state } = useGame();
-  const { player, selectedPlanet, missions } = state;
+  const { player, selectedPlanet, missions, constructionQueues } = state;
 
   const activeMissions = missions.filter(m => m.status === 'outbound' || m.status === 'returning');
   const totalFleetSize = Object.values(player.fleet).reduce((sum, count) => sum + count, 0);
@@ -29,6 +32,95 @@ export default function Dashboard() {
 
   const researchLevel = Object.values(player.research).reduce((sum, level) => sum + level, 0);
 
+  // Get active construction items
+  const activeBuildings = constructionQueues.buildings.filter(item => 
+    item.endTime > Date.now()
+  );
+  const activeResearch = constructionQueues.research.filter(item => 
+    item.endTime > Date.now()
+  );
+  const activeShipyard = constructionQueues.shipyard.filter(item => 
+    item.endTime > Date.now()
+  );
+
+  const formatTimeRemaining = (endTime: number) => {
+    const remaining = Math.max(0, endTime - Date.now());
+    const hours = Math.floor(remaining / 3600000);
+    const minutes = Math.floor((remaining % 3600000) / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+    
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    if (minutes > 0) return `${minutes}m ${seconds}s`;
+    return `${seconds}s`;
+  };
+
+  const getProgressPercentage = (startTime: number, endTime: number) => {
+    const total = endTime - startTime;
+    const elapsed = Date.now() - startTime;
+    return Math.min(100, Math.max(0, (elapsed / total) * 100));
+  };
+
+  const getBuildingName = (building: string) => {
+    const names: { [key: string]: string } = {
+      metalMine: 'Mina de Metal',
+      crystalMine: 'Mina de Cristal',
+      deuteriumSynthesizer: 'Sintetizador de Deuterio',
+      solarPlant: 'Planta Solar',
+      fusionReactor: 'Planta de Fusión',
+      roboticsFactory: 'Fábrica de Robots',
+      naniteFactory: 'Fábrica de Nanitas',
+      shipyard: 'Hangar',
+      metalStorage: 'Almacén de Metal',
+      crystalStorage: 'Almacén de Cristal',
+      deuteriumTank: 'Tanque de Deuterio',
+      researchLab: 'Laboratorio de Investigación',
+      terraformer: 'Terraformador',
+      allianceDepot: 'Depósito de Alianza',
+      missileSilo: 'Silo de Misiles'
+    };
+    return names[building] || building;
+  };
+
+  const getResearchName = (research: string) => {
+    const names: { [key: string]: string } = {
+      energyTechnology: 'Tecnología de Energía',
+      laserTechnology: 'Tecnología Láser',
+      ionTechnology: 'Tecnología Iónica',
+      hyperspaceTechnology: 'Tecnología Hiperespacio',
+      plasmaTechnology: 'Tecnología de Plasma',
+      combustionDrive: 'Motor de Combustión',
+      impulseDrive: 'Motor de Impulso',
+      hyperspaceDrive: 'Motor Hiperespacio',
+      espionageTechnology: 'Tecnología de Espionaje',
+      computerTechnology: 'Tecnología de Computación',
+      astrophysics: 'Astrofísica',
+      intergalacticResearchNetwork: 'Red de Investigación Intergaláctica',
+      gravitonTechnology: 'Tecnología Gravitón',
+      weaponsTechnology: 'Tecnología de Armas',
+      shieldingTechnology: 'Tecnología de Escudos',
+      armourTechnology: 'Tecnología de Blindaje'
+    };
+    return names[research] || research;
+  };
+
+  const getShipName = (ship: string) => {
+    const names: { [key: string]: string } = {
+      smallCargo: 'Nave de Carga Pequeña',
+      largeCargo: 'Nave de Carga Grande',
+      lightFighter: 'Cazador Ligero',
+      heavyFighter: 'Cazador Pesado',
+      cruiser: 'Crucero',
+      battleship: 'Nave de Batalla',
+      colonyShip: 'Nave Colonizadora',
+      recycler: 'Reciclador',
+      espionageProbe: 'Sonda de Espionaje',
+      bomber: 'Bombardero',
+      destroyer: 'Destructor',
+      deathstar: 'Estrella de la Muerte',
+      battlecruiser: 'Crucero de Batalla'
+    };
+    return names[ship] || ship;
+  };
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -107,6 +199,160 @@ export default function Dashboard() {
           </div>
         </Card>
       </div>
+
+      {/* Construction Queues */}
+      {(activeBuildings.length > 0 || activeResearch.length > 0 || activeShipyard.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Building Queue */}
+          {activeBuildings.length > 0 && (
+            <Card title="Cola de Construcción" glowing>
+              <div className="space-y-3">
+                {activeBuildings.slice(0, 3).map((item) => {
+                  const progress = getProgressPercentage(item.startTime, item.endTime);
+                  const isActive = Date.now() >= item.startTime;
+                  
+                  return (
+                    <div key={item.id} className="p-3 bg-space-700/50 rounded-lg border border-space-600">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <Building className="w-4 h-4 text-neon-blue" />
+                          <div>
+                            <p className="text-sm font-rajdhani font-medium text-white">
+                              {getBuildingName(item.building)} Nv.{item.level}
+                            </p>
+                            <p className="text-xs text-gray-400">{item.planetName}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center space-x-1 text-xs text-gray-400">
+                            <Clock className="w-3 h-3" />
+                            <span>{formatTimeRemaining(item.endTime)}</span>
+                          </div>
+                          {!isActive && (
+                            <p className="text-xs text-neon-orange">En cola</p>
+                          )}
+                        </div>
+                      </div>
+                      {isActive && (
+                        <div className="w-full bg-space-600 rounded-full h-2">
+                          <div 
+                            className="bg-neon-blue h-2 rounded-full transition-all duration-1000"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {activeBuildings.length > 3 && (
+                  <p className="text-xs text-gray-400 text-center">
+                    +{activeBuildings.length - 3} más en cola
+                  </p>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* Research Queue */}
+          {activeResearch.length > 0 && (
+            <Card title="Cola de Investigación" glowing>
+              <div className="space-y-3">
+                {activeResearch.slice(0, 3).map((item) => {
+                  const progress = getProgressPercentage(item.startTime, item.endTime);
+                  const isActive = Date.now() >= item.startTime;
+                  
+                  return (
+                    <div key={item.id} className="p-3 bg-space-700/50 rounded-lg border border-space-600">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <FlaskConical className="w-4 h-4 text-neon-purple" />
+                          <div>
+                            <p className="text-sm font-rajdhani font-medium text-white">
+                              {getResearchName(item.research)} Nv.{item.level}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center space-x-1 text-xs text-gray-400">
+                            <Clock className="w-3 h-3" />
+                            <span>{formatTimeRemaining(item.endTime)}</span>
+                          </div>
+                          {!isActive && (
+                            <p className="text-xs text-neon-orange">En cola</p>
+                          )}
+                        </div>
+                      </div>
+                      {isActive && (
+                        <div className="w-full bg-space-600 rounded-full h-2">
+                          <div 
+                            className="bg-neon-purple h-2 rounded-full transition-all duration-1000"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {activeResearch.length > 3 && (
+                  <p className="text-xs text-gray-400 text-center">
+                    +{activeResearch.length - 3} más en cola
+                  </p>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* Shipyard Queue */}
+          {activeShipyard.length > 0 && (
+            <Card title="Cola del Astillero" glowing>
+              <div className="space-y-3">
+                {activeShipyard.slice(0, 3).map((item) => {
+                  const progress = getProgressPercentage(item.startTime, item.endTime);
+                  const isActive = Date.now() >= item.startTime;
+                  
+                  return (
+                    <div key={item.id} className="p-3 bg-space-700/50 rounded-lg border border-space-600">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <Factory className="w-4 h-4 text-neon-green" />
+                          <div>
+                            <p className="text-sm font-rajdhani font-medium text-white">
+                              {item.quantity}x {getShipName(item.ship)}
+                            </p>
+                            <p className="text-xs text-gray-400">{item.planetName}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center space-x-1 text-xs text-gray-400">
+                            <Clock className="w-3 h-3" />
+                            <span>{formatTimeRemaining(item.endTime)}</span>
+                          </div>
+                          {!isActive && (
+                            <p className="text-xs text-neon-orange">En cola</p>
+                          )}
+                        </div>
+                      </div>
+                      {isActive && (
+                        <div className="w-full bg-space-600 rounded-full h-2">
+                          <div 
+                            className="bg-neon-green h-2 rounded-full transition-all duration-1000"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {activeShipyard.length > 3 && (
+                  <p className="text-xs text-gray-400 text-center">
+                    +{activeShipyard.length - 3} más en cola
+                  </p>
+                )}
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Production Overview */}

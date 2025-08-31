@@ -217,6 +217,44 @@ export interface GameState {
   notifications: Notification[];
   settings: GameSettings;
   combatReports: CombatReport[];
+  constructionQueues: ConstructionQueues;
+}
+
+export interface ConstructionQueues {
+  buildings: BuildingQueueItem[];
+  research: ResearchQueueItem[];
+  shipyard: ShipyardQueueItem[];
+}
+
+export interface BuildingQueueItem {
+  id: string;
+  planetId: string;
+  planetName: string;
+  building: keyof Buildings;
+  level: number;
+  startTime: number;
+  endTime: number;
+  cost: BuildingCost;
+}
+
+export interface ResearchQueueItem {
+  id: string;
+  research: keyof Research;
+  level: number;
+  startTime: number;
+  endTime: number;
+  cost: BuildingCost;
+}
+
+export interface ShipyardQueueItem {
+  id: string;
+  planetId: string;
+  planetName: string;
+  ship: keyof FleetShips;
+  quantity: number;
+  startTime: number;
+  endTime: number;
+  cost: BuildingCost;
 }
 
 export interface Message {

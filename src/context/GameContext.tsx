@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { GameState, Player, Planet, Mission, Notification, GameSettings } from '../types/game';
+import { GameState, Player, Planet, Mission, Notification, GameSettings, ConstructionQueues } from '../types/game';
 import { DiplomaticPact } from '../types/game';
 import { 
   mockPlayer, 
@@ -71,6 +71,64 @@ const defaultSettings: GameSettings = {
     showTooltips: true,
   },
 };
+
+const mockConstructionQueues: ConstructionQueues = {
+  buildings: [
+    {
+      id: '1',
+      planetId: '1',
+      planetName: 'Planeta Principal',
+      building: 'metalMine',
+      level: 13,
+      startTime: Date.now() - 1800000, // Started 30 minutes ago
+      endTime: Date.now() + 2700000, // Ends in 45 minutes
+      cost: { metal: 50000, crystal: 25000, deuterium: 0, time: 4500 }
+    },
+    {
+      id: '2',
+      planetId: '2',
+      planetName: 'Colonia Alpha',
+      building: 'solarPlant',
+      level: 11,
+      startTime: Date.now() + 2700000, // Starts after first building
+      endTime: Date.now() + 5400000, // Ends in 1.5 hours
+      cost: { metal: 30000, crystal: 15000, deuterium: 0, time: 2700 }
+    }
+  ],
+  research: [
+    {
+      id: '1',
+      research: 'weaponsTechnology',
+      level: 6,
+      startTime: Date.now() - 900000, // Started 15 minutes ago
+      endTime: Date.now() + 3600000, // Ends in 1 hour
+      cost: { metal: 80000, crystal: 40000, deuterium: 20000, time: 4500 }
+    }
+  ],
+  shipyard: [
+    {
+      id: '1',
+      planetId: '1',
+      planetName: 'Planeta Principal',
+      ship: 'lightFighter',
+      quantity: 25,
+      startTime: Date.now() - 600000, // Started 10 minutes ago
+      endTime: Date.now() + 1800000, // Ends in 30 minutes
+      cost: { metal: 75000, crystal: 25000, deuterium: 0, time: 2400 }
+    },
+    {
+      id: '2',
+      planetId: '1',
+      planetName: 'Planeta Principal',
+      ship: 'cruiser',
+      quantity: 5,
+      startTime: Date.now() + 1800000, // Starts after fighters
+      endTime: Date.now() + 5400000, // Ends in 1.5 hours
+      cost: { metal: 100000, crystal: 35000, deuterium: 10000, time: 3600 }
+    }
+  ]
+};
+
 const initialState: GameState = {
   player: mockPlayer,
   selectedPlanet: mockPlayer.planets[0],
@@ -82,6 +140,7 @@ const initialState: GameState = {
   notifications: [],
   settings: defaultSettings,
   combatReports: [],
+  constructionQueues: mockConstructionQueues,
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {

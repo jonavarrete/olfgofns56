@@ -1046,11 +1046,11 @@ export default function Alliance() {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="secondary">
+          <Button variant="secondary" onClick={() => alert('Configuración de alianza - Funcionalidad en desarrollo')}>
             <Settings className="w-4 h-4 mr-2" />
             Configuración
           </Button>
-          <Button variant="primary">
+          <Button variant="primary" onClick={() => alert('Chat de alianza - Funcionalidad en desarrollo')}>
             <MessageSquare className="w-4 h-4 mr-2" />
             Chat
           </Button>
@@ -1307,7 +1307,19 @@ export default function Alliance() {
             <div className="space-y-4 mb-4">
               <div className="flex items-center justify-between">
                 <h4 className="font-rajdhani font-semibold text-white">Otras Alianzas</h4>
-                <Button variant="primary" size="sm">
+                <Button 
+                  variant="primary" 
+                  size="sm"
+                  onClick={() => {
+                    // Find first alliance that's not current alliance for demo
+                    const targetAlliance = alliances.find(a => a.id !== currentAlliance?.id);
+                    if (targetAlliance) {
+                      handleProposePact(targetAlliance);
+                    } else {
+                      alert('No hay alianzas disponibles para proponer pactos');
+                    }
+                  }}
+                >
                   <FileText className="w-4 h-4 mr-1" />
                   Nuevo Pacto
                 </Button>

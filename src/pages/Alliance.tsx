@@ -22,7 +22,11 @@ import {
   Clock,
   AlertCircle,
   CheckCircle,
-  XCircle
+  XCircle,
+  Eye,
+  Calendar,
+  Sword,
+  BarChart3
 } from 'lucide-react';
 import { Alliance as AllianceType, BannerElement, DiplomaticPact } from '../types/game';
 
@@ -34,6 +38,9 @@ export default function Alliance() {
   const [showBannerCreator, setShowBannerCreator] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showPactCreator, setShowPactCreator] = useState(false);
+  const [showPactDetails, setShowPactDetails] = useState<string | null>(null);
+  const [showWarHistory, setShowWarHistory] = useState(false);
+  const [showCoordinateAttack, setShowCoordinateAttack] = useState(false);
   const [selectedAllianceForPact, setSelectedAllianceForPact] = useState<AllianceType | null>(null);
   const [allianceForm, setAllianceForm] = useState({
     name: '',
@@ -44,8 +51,48 @@ export default function Alliance() {
   });
   const [bannerData, setBannerData] = useState<{ elements: BannerElement[]; background: string } | null>(null);
 
-  const currentAlliance = alliances.find(a => a.name === player.alliance);;//false
+  const currentAlliance = alliances.find(a => a.name === player.alliance);
   const isInAlliance = !!currentAlliance;
+
+  // Mock banner data for current alliance if it doesn't have one
+  const mockBannerData = {
+    elements: [
+      {
+        id: '1',
+        type: 'shape' as const,
+        shape: 'shield' as const,
+        x: 200,
+        y: 150,
+        size: 80,
+        color: '#8B5CF6',
+        rotation: 0,
+        layer: 0
+      },
+      {
+        id: '2',
+        type: 'symbol' as const,
+        symbol: 'crown' as const,
+        x: 200,
+        y: 120,
+        size: 40,
+        color: '#F59E0B',
+        rotation: 0,
+        layer: 1
+      },
+      {
+        id: '3',
+        type: 'text' as const,
+        text: currentAlliance?.tag || 'GFED',
+        x: 200,
+        y: 180,
+        size: 24,
+        color: '#FFFFFF',
+        rotation: 0,
+        layer: 2
+      }
+    ],
+    background: '#1a1a2e'
+  };
 
   // Get pacts involving current alliance
   const currentAlliancePacts = state.diplomaticPacts.filter(pact => 
@@ -54,6 +101,34 @@ export default function Alliance() {
 
   const activePacts = currentAlliancePacts.filter(pact => pact.status === 'active');
   const pendingPacts = currentAlliancePacts.filter(pact => pact.status === 'pending_signature' || pact.status === 'proposed');
+
+  // Mock war data
+  const mockWarHistory = [
+    {
+      id: '1',
+      enemy: 'Dark Empire',
+      startDate: Date.now() - 86400000 * 5,
+      endDate: null,
+      status: 'active',
+      battles: 23,
+      victories: 14,
+      defeats: 9,
+      totalDamage: 2500000,
+      totalLoot: 1800000
+    },
+    {
+      id: '2',
+      enemy: 'Shadow Legion',
+      startDate: Date.now() - 86400000 * 45,
+      endDate: Date.now() - 86400000 * 12,
+      status: 'victory',
+      battles: 67,
+      victories: 45,
+      defeats: 22,
+      totalDamage: 8900000,
+      totalLoot: 5600000
+    }
+  ];
 
   const tabs = [
     { key: 'overview' as const, name: 'Resumen', icon: Users },
@@ -147,6 +222,18 @@ export default function Alliance() {
     }
   };
 
+  const handleViewPactDetails = (pactId: string) => {
+    setShowPactDetails(pactId);
+  };
+
+  const handleViewWarHistory = () => {
+    setShowWarHistory(true);
+  };
+
+  const handleCoordinateAttack = () => {
+    setShowCoordinateAttack(true);
+  };
+
   const getPactStatusColor = (status: DiplomaticPact['status']) => {
     switch (status) {
       case 'active': return 'text-neon-green';
@@ -175,6 +262,8 @@ export default function Alliance() {
     return alliances.find(a => a.id === otherAllianceId);
   };
 
+  const selectedPact = showPactDetails ? currentAlliancePacts.find(p => p.id === showPactDetails) : null;
+
   if (showBannerCreator) {
     return (
       <BannerCreator
@@ -198,6 +287,398 @@ export default function Alliance() {
         }}
         onPropose={handlePactProposal}
       />
+    );
+  }
+
+  // Pact Details Modal
+  if (showPactDetails && selectedPact) {
+    const otherAlliance = getOtherAlliance(selectedPact);
+    const StatusIcon = getPactStatusIcon(selectedPact.status);
+    const daysRemaining = selectedPact.expirationDate ? 
+      Math.ceil((selectedPact.expirationDate - Date.now()) / (1000 * 60 * 60 * 24)) : null;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-card-gradient border border-space-600 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6 border-b border-space-600">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <StatusIcon className={`w-6 h-6 ${getPactStatusColor(selectedPact.status)}`} />
+                <div>
+                  <h2 className="text-xl font-orbitron font-bold text-white">
+                    {selectedPact.name}
+                  </h2>
+                  <p className="text-gray-400">
+                    Con {otherAlliance?.name} [{otherAlliance?.tag}]
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPactDetails(null)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-6">
+            {/* Status and Duration */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <div className="text-center">
+                  <StatusIcon className={`w-8 h-8 mx-auto mb-2 ${getPactStatusColor(selectedPact.status)}`} />
+                  <p className="font-rajdhani font-semibold text-white capitalize">
+                    {selectedPact.status === 'active' ? 'Activo' :
+                     selectedPact.status === 'pending_signature' ? 'Pendiente' :
+                     selectedPact.status === 'proposed' ? 'Propuesto' :
+                     selectedPact.status === 'expired' ? 'Expirado' :
+                     'Cancelado'}
+                  </p>
+                </div>
+              </Card>
+
+              <Card>
+                <div className="text-center">
+                  <Calendar className="w-8 h-8 mx-auto mb-2 text-neon-blue" />
+                  <p className="font-rajdhani font-semibold text-white">
+                    {selectedPact.duration} días
+                  </p>
+                  <p className="text-xs text-gray-400">Duración total</p>
+                </div>
+              </Card>
+
+              <Card>
+                <div className="text-center">
+                  <Clock className="w-8 h-8 mx-auto mb-2 text-neon-orange" />
+                  <p className="font-rajdhani font-semibold text-white">
+                    {daysRemaining ? `${daysRemaining} días` : 'N/A'}
+                  </p>
+                  <p className="text-xs text-gray-400">Tiempo restante</p>
+                </div>
+              </Card>
+            </div>
+
+            {/* Pact Types */}
+            <Card title="Tipos de Pacto">
+              <div className="flex flex-wrap gap-2">
+                {selectedPact.types.map(type => (
+                  <span
+                    key={type}
+                    className="px-3 py-2 bg-neon-green/20 text-neon-green rounded-lg text-sm font-rajdhani font-medium"
+                  >
+                    {type === 'non_aggression' ? 'Pacto de No Agresión' :
+                     type === 'trade_agreement' ? 'Acuerdo Comercial' :
+                     type === 'military_alliance' ? 'Alianza Militar' :
+                     type === 'research_cooperation' ? 'Cooperación en Investigación' :
+                     type === 'mutual_defense' ? 'Defensa Mutua' :
+                     'Intercambio de Recursos'}
+                  </span>
+                ))}
+              </div>
+            </Card>
+
+            {/* Terms and Conditions */}
+            <Card title="Términos y Condiciones">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-rajdhani font-semibold text-white mb-2">Descripción</h4>
+                  <p className="text-gray-300">{selectedPact.terms.description}</p>
+                </div>
+
+                <div>
+                  <h4 className="font-rajdhani font-semibold text-white mb-2">Condiciones</h4>
+                  <ul className="space-y-1">
+                    {selectedPact.terms.conditions.map((condition, index) => (
+                      <li key={index} className="flex items-start space-x-2">
+                        <CheckCircle className="w-4 h-4 text-neon-green mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-gray-300">{condition}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {selectedPact.terms.penalties.length > 0 && (
+                  <div>
+                    <h4 className="font-rajdhani font-semibold text-white mb-2">Penalizaciones</h4>
+                    <ul className="space-y-1">
+                      {selectedPact.terms.penalties.map((penalty, index) => (
+                        <li key={index} className="flex items-start space-x-2">
+                          <XCircle className="w-4 h-4 text-neon-red mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-gray-300">{penalty}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Benefits */}
+            {(selectedPact.benefits.tradeDiscount || selectedPact.benefits.researchBonus || selectedPact.benefits.militarySupport) && (
+              <Card title="Beneficios del Pacto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {selectedPact.benefits.tradeDiscount && (
+                    <div className="p-3 bg-neon-green/10 border border-neon-green/30 rounded-lg">
+                      <h5 className="font-rajdhani font-semibold text-white mb-1">Descuento Comercial</h5>
+                      <p className="text-neon-green font-bold">{selectedPact.benefits.tradeDiscount}%</p>
+                    </div>
+                  )}
+                  
+                  {selectedPact.benefits.researchBonus && (
+                    <div className="p-3 bg-neon-purple/10 border border-neon-purple/30 rounded-lg">
+                      <h5 className="font-rajdhani font-semibold text-white mb-1">Bonus de Investigación</h5>
+                      <p className="text-neon-purple font-bold">{selectedPact.benefits.researchBonus}%</p>
+                    </div>
+                  )}
+
+                  {selectedPact.benefits.militarySupport && (
+                    <div className="p-3 bg-neon-red/10 border border-neon-red/30 rounded-lg md:col-span-2">
+                      <h5 className="font-rajdhani font-semibold text-white mb-2">Apoyo Militar</h5>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedPact.benefits.militarySupport.fleetSharing && (
+                          <span className="px-2 py-1 bg-neon-red/20 text-neon-red rounded text-xs">
+                            Compartir Flotas
+                          </span>
+                        )}
+                        {selectedPact.benefits.militarySupport.coordinatedAttacks && (
+                          <span className="px-2 py-1 bg-neon-red/20 text-neon-red rounded text-xs">
+                            Ataques Coordinados
+                          </span>
+                        )}
+                        {selectedPact.benefits.militarySupport.defenseAssistance && (
+                          <span className="px-2 py-1 bg-neon-red/20 text-neon-red rounded text-xs">
+                            Asistencia Defensiva
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+
+            {/* Signature Status */}
+            <Card title="Estado de Firmas">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center space-x-3 p-3 bg-space-700/30 rounded-lg">
+                  {selectedPact.signatures.alliance1 ? (
+                    <CheckCircle className="w-6 h-6 text-neon-green" />
+                  ) : (
+                    <Clock className="w-6 h-6 text-neon-orange" />
+                  )}
+                  <div>
+                    <p className="font-rajdhani font-semibold text-white">
+                      {alliances.find(a => a.id === selectedPact.alliance1)?.name}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {selectedPact.signatures.alliance1 ? 'Firmado' : 'Pendiente'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3 p-3 bg-space-700/30 rounded-lg">
+                  {selectedPact.signatures.alliance2 ? (
+                    <CheckCircle className="w-6 h-6 text-neon-green" />
+                  ) : (
+                    <Clock className="w-6 h-6 text-neon-orange" />
+                  )}
+                  <div>
+                    <p className="font-rajdhani font-semibold text-white">
+                      {alliances.find(a => a.id === selectedPact.alliance2)?.name}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {selectedPact.signatures.alliance2 ? 'Firmado' : 'Pendiente'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // War History Modal
+  if (showWarHistory) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-card-gradient border border-space-600 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6 border-b border-space-600">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <BarChart3 className="w-6 h-6 text-neon-red" />
+                <h2 className="text-xl font-orbitron font-bold text-white">
+                  Historial de Guerras
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowWarHistory(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-4">
+            {mockWarHistory.map((war) => (
+              <Card key={war.id}>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <Sword className="w-6 h-6 text-neon-red" />
+                    <div>
+                      <h3 className="text-lg font-rajdhani font-semibold text-white">
+                        Guerra contra {war.enemy}
+                      </h3>
+                      <p className="text-sm text-gray-400">
+                        {new Date(war.startDate).toLocaleDateString()} - {
+                          war.endDate ? new Date(war.endDate).toLocaleDateString() : 'En curso'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`px-3 py-1 rounded font-rajdhani font-medium ${
+                    war.status === 'active' ? 'bg-neon-red/20 text-neon-red' :
+                    war.status === 'victory' ? 'bg-neon-green/20 text-neon-green' :
+                    'bg-gray-500/20 text-gray-400'
+                  }`}>
+                    {war.status === 'active' ? 'ACTIVA' :
+                     war.status === 'victory' ? 'VICTORIA' :
+                     'DERROTA'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-orbitron font-bold text-white">{war.battles}</p>
+                    <p className="text-xs text-gray-400">Batallas</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-orbitron font-bold text-neon-green">{war.victories}</p>
+                    <p className="text-xs text-gray-400">Victorias</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-orbitron font-bold text-neon-red">{war.defeats}</p>
+                    <p className="text-xs text-gray-400">Derrotas</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-orbitron font-bold text-neon-orange">
+                      {(war.totalDamage / 1000000).toFixed(1)}M
+                    </p>
+                    <p className="text-xs text-gray-400">Daño total</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-orbitron font-bold text-neon-blue">
+                      {(war.totalLoot / 1000000).toFixed(1)}M
+                    </p>
+                    <p className="text-xs text-gray-400">Botín total</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Coordinate Attack Modal
+  if (showCoordinateAttack) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-card-gradient border border-space-600 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6 border-b border-space-600">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Target className="w-6 h-6 text-neon-red" />
+                <h2 className="text-xl font-orbitron font-bold text-white">
+                  Coordinar Ataque
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowCoordinateAttack(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-6">
+            <Card title="Objetivo del Ataque">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-rajdhani font-medium text-gray-400 mb-2">
+                    Coordenadas del Objetivo
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej: 1:2:3"
+                    className="w-full px-3 py-2 bg-space-700 border border-space-600 rounded text-white text-sm focus:border-neon-blue focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-rajdhani font-medium text-gray-400 mb-2">
+                    Hora de Llegada Coordinada
+                  </label>
+                  <input
+                    type="datetime-local"
+                    className="w-full px-3 py-2 bg-space-700 border border-space-600 rounded text-white text-sm focus:border-neon-blue focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-rajdhani font-medium text-gray-400 mb-2">
+                    Descripción de la Misión
+                  </label>
+                  <textarea
+                    placeholder="Describe los objetivos del ataque coordinado..."
+                    className="w-full px-3 py-2 bg-space-700 border border-space-600 rounded text-white text-sm focus:border-neon-blue focus:outline-none resize-none"
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </Card>
+
+            <Card title="Participantes">
+              <div className="space-y-3">
+                {mockMembers.filter(m => m.online).map((member) => (
+                  <div key={member.username} className="flex items-center justify-between p-3 bg-space-700/30 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-neon-purple/20 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-orbitron font-bold text-white">
+                          {member.username.substring(0, 2).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-rajdhani font-semibold text-white">{member.username}</p>
+                        <p className="text-xs text-gray-400">{member.role}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-neon-green rounded-full" />
+                      <span className="text-xs text-gray-400">En línea</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-space-600">
+              <Button variant="secondary" onClick={() => setShowCoordinateAttack(false)}>
+                Cancelar
+              </Button>
+              <Button variant="primary">
+                <Target className="w-4 h-4 mr-2" />
+                Enviar Coordinación
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -658,15 +1139,14 @@ export default function Alliance() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card title="Información de la Alianza" glowing>
             <div className="flex items-center space-x-4 mb-4">
-              {currentAlliance?.banner && (
-                <AllianceBanner
-                  elements={currentAlliance.banner.elements}
-                  background={currentAlliance.banner.background}
-                  width={80}
-                  height={60}
-                  className="rounded-lg"
-                />
-              )}
+              {/* Display alliance banner - use mock data if no banner exists */}
+              <AllianceBanner
+                elements={currentAlliance?.banner?.elements || mockBannerData.elements}
+                background={currentAlliance?.banner?.background || mockBannerData.background}
+                width={80}
+                height={60}
+                className="rounded-lg border border-space-600"
+              />
               <div>
                 <h3 className="text-xl font-orbitron font-bold text-white">
                   {currentAlliance?.name}
@@ -937,7 +1417,12 @@ export default function Alliance() {
                               )}
                             </div>
                             <div className="flex space-x-2">
-                              <Button variant="secondary" size="sm">
+                              <Button 
+                                variant="secondary" 
+                                size="sm"
+                                onClick={() => handleViewPactDetails(pact.id)}
+                              >
+                                <Eye className="w-4 h-4 mr-1" />
                                 Ver Detalles
                               </Button>
                               <Button 
@@ -1016,7 +1501,12 @@ export default function Alliance() {
                                   Firmar
                                 </Button>
                               )}
-                              <Button variant="secondary" size="sm">
+                              <Button 
+                                variant="secondary" 
+                                size="sm"
+                                onClick={() => handleViewPactDetails(pact.id)}
+                              >
+                                <Eye className="w-4 h-4 mr-1" />
                                 Ver Detalles
                               </Button>
                               <Button 
@@ -1135,11 +1625,20 @@ export default function Alliance() {
               </div>
 
               <div className="flex space-x-2">
-                <Button variant="danger" size="sm">
+                <Button 
+                  variant="danger" 
+                  size="sm"
+                  onClick={handleCoordinateAttack}
+                >
                   <Target className="w-4 h-4 mr-2" />
                   Coordinar Ataque
                 </Button>
-                <Button variant="secondary" size="sm">
+                <Button 
+                  variant="secondary" 
+                  size="sm"
+                  onClick={handleViewWarHistory}
+                >
+                  <BarChart3 className="w-4 h-4 mr-2" />
                   Ver Historial
                 </Button>
               </div>

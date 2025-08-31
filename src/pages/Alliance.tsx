@@ -41,6 +41,8 @@ export default function Alliance() {
   const [showPactDetails, setShowPactDetails] = useState<string | null>(null);
   const [showWarHistory, setShowWarHistory] = useState(false);
   const [showCoordinateAttack, setShowCoordinateAttack] = useState(false);
+  const [showAllianceSettings, setShowAllianceSettings] = useState(false);
+  const [showAllianceChat, setShowAllianceChat] = useState(false);
   const [selectedAllianceForPact, setSelectedAllianceForPact] = useState<AllianceType | null>(null);
   const [allianceForm, setAllianceForm] = useState({
     name: '',
@@ -50,8 +52,19 @@ export default function Alliance() {
     requiresApproval: true
   });
   const [bannerData, setBannerData] = useState<{ elements: BannerElement[]; background: string } | null>(null);
-
+  const [chatMessage, setChatMessage] = useState('');
   const currentAlliance = alliances.find(a => a.name === player.alliance);
+  const [allianceSettings, setAllianceSettings] = useState({
+    name: currentAlliance?.name || '',
+    description: currentAlliance?.description || '',
+    isPublic: currentAlliance?.isPublic ?? true,
+    requiresApproval: currentAlliance?.requiresApproval ?? true,
+    allowMemberInvites: true,
+    allowMemberKicks: false,
+    chatModeration: true,
+    warDeclarationVoting: true
+  });
+
   const isInAlliance = !!currentAlliance;
 
   // Mock banner data for current alliance if it doesn't have one
@@ -101,6 +114,50 @@ export default function Alliance() {
 
   const activePacts = currentAlliancePacts.filter(pact => pact.status === 'active');
   const pendingPacts = currentAlliancePacts.filter(pact => pact.status === 'pending_signature' || pact.status === 'proposed');
+
+  // Mock chat messages
+  const mockChatMessages = [
+    {
+      id: '1',
+      username: 'AllianceLeader',
+      role: 'Líder',
+      message: '¡Excelente trabajo en el último ataque coordinado, equipo!',
+      timestamp: Date.now() - 300000,
+      isSystem: false
+    },
+    {
+      id: '2',
+      username: 'Sistema',
+      role: 'Sistema',
+      message: 'ViceCommander se ha conectado',
+      timestamp: Date.now() - 600000,
+      isSystem: true
+    },
+    {
+      id: '3',
+      username: 'ViceCommander',
+      role: 'Sublíder',
+      message: 'Necesitamos coordinar la defensa del sector 7. ¿Alguien disponible?',
+      timestamp: Date.now() - 900000,
+      isSystem: false
+    },
+    {
+      id: '4',
+      username: 'SpaceCommander',
+      role: 'Miembro',
+      message: 'Yo puedo ayudar con la defensa. Tengo flota disponible.',
+      timestamp: Date.now() - 1200000,
+      isSystem: false
+    },
+    {
+      id: '5',
+      username: 'GalaxyDefender',
+      role: 'Miembro',
+      message: 'Perfecto, coordinemos en 30 minutos',
+      timestamp: Date.now() - 1500000,
+      isSystem: false
+    }
+  ];
 
   // Mock war data
   const mockWarHistory = [
@@ -232,6 +289,45 @@ export default function Alliance() {
 
   const handleCoordinateAttack = () => {
     setShowCoordinateAttack(true);
+  };
+
+  const handleOpenSettings = () => {
+    setShowAllianceSettings(true);
+  };
+
+  const handleOpenChat = () => {
+    setShowAllianceChat(true);
+  };
+
+  const handleSaveSettings = () => {
+    // En una implementación real, esto se guardaría en la base de datos
+    console.log('Guardando configuración de alianza:', allianceSettings);
+    setShowAllianceSettings(false);
+    alert('Configuración guardada exitosamente!');
+  };
+
+  const handleSendMessage = () => {
+    if (!chatMessage.trim()) return;
+    
+    // En una implementación real, esto se enviaría al servidor
+    console.log('Enviando mensaje:', {
+      username: player.username,
+      message: chatMessage,
+      timestamp: Date.now()
+    });
+    
+    setChatMessage('');
+    alert('Mensaje enviado! (En una implementación real, aparecería en el chat)');
+  };
+
+  const formatChatTime = (timestamp: number) => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    
+    if (diff < 60000) return 'Ahora';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h`;
+    return new Date(timestamp).toLocaleDateString();
   };
 
   const getPactStatusColor = (status: DiplomaticPact['status']) => {
@@ -682,6 +778,407 @@ export default function Alliance() {
     );
   }
 
+  // Alliance Settings Modal
+  if (showAllianceSettings) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-card-gradient border border-space-600 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6 border-b border-space-600">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Settings className="w-6 h-6 text-neon-blue" />
+                <h2 className="text-xl font-orbitron font-bold text-white">
+                  Configuración de Alianza
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowAllianceSettings(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-6">
+            {/* Basic Information */}
+            <Card title="Información Básica">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-rajdhani font-medium text-gray-400 mb-2">
+                    Nombre de la Alianza
+                  </label>
+                  <input
+                    type="text"
+                    value={allianceSettings.name}
+                    onChange={(e) => setAllianceSettings({ ...allianceSettings, name: e.target.value })}
+                    className="w-full px-3 py-2 bg-space-700 border border-space-600 rounded text-white text-sm focus:border-neon-blue focus:outline-none"
+                    maxLength={30}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-rajdhani font-medium text-gray-400 mb-2">
+                    Descripción
+                  </label>
+                  <textarea
+                    value={allianceSettings.description}
+                    onChange={(e) => setAllianceSettings({ ...allianceSettings, description: e.target.value })}
+                    className="w-full px-3 py-2 bg-space-700 border border-space-600 rounded text-white text-sm focus:border-neon-blue focus:outline-none resize-none"
+                    rows={3}
+                    maxLength={200}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {allianceSettings.description.length}/200 caracteres
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Membership Settings */}
+            <Card title="Configuración de Membresía">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-space-700/30 rounded-lg">
+                  <div>
+                    <p className="text-sm font-rajdhani font-medium text-white">
+                      Alianza Pública
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Visible en la lista de alianzas disponibles
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setAllianceSettings({ ...allianceSettings, isPublic: !allianceSettings.isPublic })}
+                    className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
+                      allianceSettings.isPublic ? 'bg-neon-green' : 'bg-space-600'
+                    }`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+                      allianceSettings.isPublic ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-space-700/30 rounded-lg">
+                  <div>
+                    <p className="text-sm font-rajdhani font-medium text-white">
+                      Requiere Aprobación
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Las solicitudes deben ser aprobadas por líderes
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setAllianceSettings({ ...allianceSettings, requiresApproval: !allianceSettings.requiresApproval })}
+                    className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
+                      allianceSettings.requiresApproval ? 'bg-neon-blue' : 'bg-space-600'
+                    }`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+                      allianceSettings.requiresApproval ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-space-700/30 rounded-lg">
+                  <div>
+                    <p className="text-sm font-rajdhani font-medium text-white">
+                      Miembros Pueden Invitar
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Permitir que miembros regulares inviten jugadores
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setAllianceSettings({ ...allianceSettings, allowMemberInvites: !allianceSettings.allowMemberInvites })}
+                    className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
+                      allianceSettings.allowMemberInvites ? 'bg-neon-green' : 'bg-space-600'
+                    }`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+                      allianceSettings.allowMemberInvites ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-space-700/30 rounded-lg">
+                  <div>
+                    <p className="text-sm font-rajdhani font-medium text-white">
+                      Miembros Pueden Expulsar
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Permitir que miembros expulsen a otros miembros
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setAllianceSettings({ ...allianceSettings, allowMemberKicks: !allianceSettings.allowMemberKicks })}
+                    className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
+                      allianceSettings.allowMemberKicks ? 'bg-neon-red' : 'bg-space-600'
+                    }`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+                      allianceSettings.allowMemberKicks ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+            </Card>
+
+            {/* Communication Settings */}
+            <Card title="Configuración de Comunicación">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-space-700/30 rounded-lg">
+                  <div>
+                    <p className="text-sm font-rajdhani font-medium text-white">
+                      Moderación del Chat
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Filtrar mensajes inapropiados automáticamente
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setAllianceSettings({ ...allianceSettings, chatModeration: !allianceSettings.chatModeration })}
+                    className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
+                      allianceSettings.chatModeration ? 'bg-neon-blue' : 'bg-space-600'
+                    }`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+                      allianceSettings.chatModeration ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+            </Card>
+
+            {/* War Settings */}
+            <Card title="Configuración de Guerra">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-space-700/30 rounded-lg">
+                  <div>
+                    <p className="text-sm font-rajdhani font-medium text-white">
+                      Votación para Declarar Guerra
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Requiere votación de miembros para declarar guerra
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setAllianceSettings({ ...allianceSettings, warDeclarationVoting: !allianceSettings.warDeclarationVoting })}
+                    className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
+                      allianceSettings.warDeclarationVoting ? 'bg-neon-orange' : 'bg-space-600'
+                    }`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+                      allianceSettings.warDeclarationVoting ? 'translate-x-7' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+            </Card>
+
+            {/* Banner Management */}
+            <Card title="Gestión del Estandarte">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-4 p-4 bg-space-700/30 rounded-lg border border-space-600">
+                  <AllianceBanner
+                    elements={currentAlliance?.banner?.elements || mockBannerData.elements}
+                    background={currentAlliance?.banner?.background || mockBannerData.background}
+                    width={80}
+                    height={60}
+                    className="rounded"
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm text-white font-rajdhani font-medium mb-1">
+                      Estandarte Actual
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Representa a tu alianza en toda la galaxia
+                    </p>
+                  </div>
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={() => {
+                      setShowAllianceSettings(false);
+                      setShowBannerCreator(true);
+                    }}
+                  >
+                    Editar Estandarte
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-space-600">
+              <Button variant="secondary" onClick={() => setShowAllianceSettings(false)}>
+                Cancelar
+              </Button>
+              <Button variant="primary" onClick={handleSaveSettings}>
+                <Settings className="w-4 h-4 mr-2" />
+                Guardar Configuración
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Alliance Chat Modal
+  if (showAllianceChat) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-card-gradient border border-space-600 rounded-lg max-w-4xl w-full h-[80vh] flex flex-col">
+          <div className="p-6 border-b border-space-600">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <MessageSquare className="w-6 h-6 text-neon-green" />
+                <div>
+                  <h2 className="text-xl font-orbitron font-bold text-white">
+                    Chat de Alianza
+                  </h2>
+                  <p className="text-sm text-gray-400">
+                    {currentAlliance?.name} • {mockMembers.filter(m => m.online).length} en línea
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAllianceChat(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Chat Messages */}
+          <div className="flex-1 p-6 overflow-y-auto">
+            <div className="space-y-4">
+              {mockChatMessages
+                .sort((a, b) => a.timestamp - b.timestamp)
+                .map((message) => (
+                <div key={message.id} className={`flex items-start space-x-3 ${
+                  message.username === player.username ? 'flex-row-reverse space-x-reverse' : ''
+                }`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    message.isSystem ? 'bg-gray-500/20' :
+                    message.role === 'Líder' ? 'bg-yellow-500/20' :
+                    message.role === 'Sublíder' ? 'bg-neon-blue/20' :
+                    message.username === player.username ? 'bg-neon-purple/20' :
+                    'bg-space-600'
+                  }`}>
+                    {message.isSystem ? (
+                      <Settings className="w-4 h-4 text-gray-400" />
+                    ) : message.role === 'Líder' ? (
+                      <Crown className="w-4 h-4 text-yellow-400" />
+                    ) : (
+                      <span className="text-xs font-orbitron font-bold text-white">
+                        {message.username.substring(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className={`flex-1 max-w-md ${
+                    message.username === player.username ? 'text-right' : ''
+                  }`}>
+                    <div className={`p-3 rounded-lg ${
+                      message.isSystem ? 'bg-gray-500/10 border border-gray-500/30' :
+                      message.username === player.username ? 'bg-neon-purple/20 border border-neon-purple/30' :
+                      'bg-space-700/50 border border-space-600'
+                    }`}>
+                      {!message.isSystem && (
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className={`text-xs font-rajdhani font-semibold ${
+                            message.role === 'Líder' ? 'text-yellow-400' :
+                            message.role === 'Sublíder' ? 'text-neon-blue' :
+                            message.username === player.username ? 'text-neon-purple' :
+                            'text-gray-300'
+                          }`}>
+                            {message.username}
+                          </span>
+                          <span className={`px-1 py-0.5 rounded text-xs ${
+                            message.role === 'Líder' ? 'bg-yellow-500/20 text-yellow-400' :
+                            message.role === 'Sublíder' ? 'bg-neon-blue/20 text-neon-blue' :
+                            'bg-neon-purple/20 text-neon-purple'
+                          }`}>
+                            {message.role}
+                          </span>
+                        </div>
+                      )}
+                      <p className={`text-sm ${
+                        message.isSystem ? 'text-gray-400 italic' : 'text-white'
+                      }`}>
+                        {message.message}
+                      </p>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {formatChatTime(message.timestamp)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Message Input */}
+          <div className="p-6 border-t border-space-600">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-neon-purple/20 rounded-full flex items-center justify-center">
+                <span className="text-xs font-orbitron font-bold text-white">
+                  {player.username.substring(0, 2).toUpperCase()}
+                </span>
+              </div>
+              <div className="flex-1 flex space-x-2">
+                <input
+                  type="text"
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  placeholder="Escribe un mensaje para tu alianza..."
+                  className="flex-1 px-3 py-2 bg-space-700 border border-space-600 rounded text-white text-sm focus:border-neon-blue focus:outline-none"
+                  maxLength={200}
+                />
+                <Button 
+                  variant="primary" 
+                  onClick={handleSendMessage}
+                  disabled={!chatMessage.trim()}
+                >
+                  Enviar
+                </Button>
+              </div>
+            </div>
+            
+            {/* Online Members */}
+            <div className="mt-4 pt-4 border-t border-space-600">
+              <h4 className="text-sm font-rajdhani font-medium text-gray-400 mb-2">
+                Miembros en línea ({mockMembers.filter(m => m.online).length})
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {mockMembers
+                  .filter(m => m.online)
+                  .map((member) => (
+                  <div
+                    key={member.username}
+                    className={`flex items-center space-x-2 px-3 py-1 rounded-lg ${
+                      member.role === 'Líder' ? 'bg-yellow-500/20 text-yellow-400' :
+                      member.role === 'Sublíder' ? 'bg-neon-blue/20 text-neon-blue' :
+                      'bg-neon-green/20 text-neon-green'
+                    }`}
+                  >
+                    <div className="w-2 h-2 bg-current rounded-full" />
+                    <span className="text-xs font-rajdhani font-medium">
+                      {member.username}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!isInAlliance) {
     return (
       <>
@@ -1046,11 +1543,11 @@ export default function Alliance() {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="secondary" onClick={() => alert('Configuración de alianza - Funcionalidad en desarrollo')}>
+          <Button variant="secondary" onClick={handleOpenSettings}>
             <Settings className="w-4 h-4 mr-2" />
             Configuración
           </Button>
-          <Button variant="primary" onClick={() => alert('Chat de alianza - Funcionalidad en desarrollo')}>
+          <Button variant="primary" onClick={handleOpenChat}>
             <MessageSquare className="w-4 h-4 mr-2" />
             Chat
           </Button>

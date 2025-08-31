@@ -13,7 +13,8 @@ import {
   Globe,
   Book,
   Calculator,
-  Target
+  Target,
+  Store
 } from 'lucide-react';
 
 const navigation = [
@@ -23,6 +24,7 @@ const navigation = [
   { name: 'Astillero', href: '/shipyard', icon: Rocket },
   { name: 'Flota', href: '/fleet', icon: Swords },
   { name: 'Galaxia', href: '/galaxy', icon: Globe },
+  { name: 'Comercio', href: '/trade', icon: Store },
   { name: 'Simulador', href: '/simulator', icon: Calculator },
   { name: 'Misiones PvE', href: '/pve-missions', icon: Target },
   { name: 'Guía Galáctica', href: '/guide', icon: Book },

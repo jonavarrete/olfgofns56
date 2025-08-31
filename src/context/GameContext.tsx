@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { GameState, Player, Planet, Mission, Notification, GameSettings, ConstructionQueues } from '../types/game';
 import { DiplomaticPact } from '../types/game';
+import { TradeState } from '../types/trade';
+import { mockTradeOffers, mockAuctions, mockScrapDealer, mockMerchant, mockTradeRoutes } from '../data/tradeData';
 import { 
   mockPlayer, 
   mockMissions, 
@@ -141,6 +143,19 @@ const initialState: GameState = {
   settings: defaultSettings,
   combatReports: [],
   constructionQueues: mockConstructionQueues,
+  trade: {
+    offers: mockTradeOffers,
+    auctions: mockAuctions,
+    scrapDealer: mockScrapDealer,
+    merchant: mockMerchant,
+    tradeRoutes: mockTradeRoutes,
+    playerTrades: {
+      completedTrades: 23,
+      reputation: 4.8,
+      totalProfit: 567890,
+      successRate: 95.7,
+    },
+  },
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {

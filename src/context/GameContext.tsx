@@ -15,6 +15,7 @@ interface GameContextType {
   dispatch: React.Dispatch<GameAction>;
   selectPlanet: (planet: Planet) => void;
   updateResources: (planetId: string, resources: any) => void;
+  updateDebris: (planetId: string, debris: any) => void;
   addMission: (mission: Mission) => void;
   updateBuilding: (planetId: string, building: string, level: number) => void;
   addNotification: (notification: Notification) => void;
@@ -31,6 +32,7 @@ interface GameContextType {
 type GameAction = 
   | { type: 'SELECT_PLANET'; payload: Planet }
   | { type: 'UPDATE_RESOURCES'; payload: { planetId: string; resources: any } }
+  | { type: 'UPDATE_DEBRIS'; payload: { planetId: string; debris: any } }
   | { type: 'ADD_MISSION'; payload: Mission }
   | { type: 'UPDATE_BUILDING'; payload: { planetId: string; building: string; level: number } }
   | { type: 'SET_PLAYER'; payload: Player }
@@ -97,6 +99,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         player: { ...state.player, planets: updatedPlanets },
         selectedPlanet: state.selectedPlanet.id === action.payload.planetId
           ? { ...state.selectedPlanet, resources: { ...state.selectedPlanet.resources, ...action.payload.resources } }
+          : state.selectedPlanet,
+      };
+    case 'UPDATE_DEBRIS':
+      const planetsWithUpdatedDebris = state.player.planets.map(planet =>
+        planet.id === action.payload.planetId
+          ? { ...planet, debris: { ...planet.debris, ...action.payload.debris } }
+          : planet
+      );
+      return {
+        ...state,
+        player: { ...state.player, planets: planetsWithUpdatedDebris },
+        selectedPlanet: state.selectedPlanet.id === action.payload.planetId
+          ? { ...state.selectedPlanet, debris: { ...state.selectedPlanet.debris, ...action.payload.debris } }
           : state.selectedPlanet,
       };
     case 'ADD_MISSION':
@@ -201,6 +216,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'UPDATE_RESOURCES', payload: { planetId, resources } });
   };
 
+  const updateDebris = (planetId: string, debris: any) => {
+    dispatch({ type: 'UPDATE_DEBRIS', payload: { planetId, debris } });
+  };
+
   const addMission = (mission: Mission) => {
     dispatch({ type: 'ADD_MISSION', payload: mission });
   };
@@ -251,6 +270,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       dispatch,
       selectPlanet,
       updateResources,
+      updateDebris,
       addMission,
       updateBuilding,
       addNotification,

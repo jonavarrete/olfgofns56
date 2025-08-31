@@ -79,6 +79,12 @@ export const mockPlanets: Planet[] = [
       deuterium: 900,
       energy: 2400,
     },
+    debris: {
+      metal: 45000,
+      crystal: 22000,
+      deuterium: 0,
+      energy: 0,
+    },
   },
   {
     id: '2',
@@ -108,6 +114,12 @@ export const mockPlanets: Planet[] = [
       crystal: 1200,
       deuterium: 1200,
       energy: 1800,
+    },
+    debris: {
+      metal: 18000,
+      crystal: 8000,
+      deuterium: 0,
+      energy: 0,
     },
   },
 ];

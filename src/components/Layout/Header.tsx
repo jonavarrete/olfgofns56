@@ -14,7 +14,7 @@ export default function Header() {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-6">
           <PlanetSelector />
-          <ResourceDisplay resources={selectedPlanet.resources} />
+          <ResourceDisplay resources={selectedPlanet.resources} showDebris={true} />
         </div>
 
         <div className="flex items-center space-x-4">

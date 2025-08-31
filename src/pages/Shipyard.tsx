@@ -11,6 +11,8 @@ import {
   Bomb,
   Clock,
   Plus,
+  Wrench,
+  Recycle,
   Minus
 } from 'lucide-react';
 
@@ -136,6 +138,9 @@ export default function Shipyard() {
   const [selectedCategory, setSelectedCategory] = useState('Civil');
   const [buildQueue, setBuildQueue] = useState<{ [key: string]: number }>({});
   const [buildQuantities, setBuildQuantities] = useState<{ [key: string]: number }>({});
+  const [repairMode, setRepairMode] = useState(false);
+  const [repairQuantities, setRepairQuantities] = useState<{ [key: string]: number }>({});
+  const [repairQueue, setRepairQueue] = useState<{ [key: string]: number }>({});
 
   const categories = ['Civil', 'Combate', 'Especial'];
 
@@ -189,11 +194,72 @@ export default function Shipyard() {
     setBuildQuantities({ ...buildQuantities, [shipKey]: newQuantity });
   };
 
+  const canRepair = (shipKey: string) => {
+    const ship = shipData[shipKey];
+    const debris = selectedPlanet.debris;
+    const shipyard = selectedPlanet.buildings.shipyard;
+    const currentShips = player.fleet[shipKey as keyof typeof player.fleet] || 0;
+
+    if (shipyard === 0 || currentShips === 0) return false;
+
+    // Check requirements
+    if (ship.requirements) {
+      for (const [reqKey, reqLevel] of Object.entries(ship.requirements)) {
+        if (player.research[reqKey as keyof typeof player.research] < reqLevel) {
+          return false;
+        }
+      }
+    }
+
+    const quantity = repairQuantities[shipKey] || 1;
+    const repairCost = {
+      metal: Math.floor(ship.cost.metal * 0.6 * quantity), // 60% del costo original
+      crystal: Math.floor(ship.cost.crystal * 0.6 * quantity),
+      deuterium: Math.floor(ship.cost.deuterium * 0.6 * quantity),
+    };
+
+    return (
+      debris.metal >= repairCost.metal &&
+      debris.crystal >= repairCost.crystal &&
+      debris.deuterium >= repairCost.deuterium &&
+      quantity <= currentShips
+    );
+  };
+
+  const handleRepair = (shipKey: string) => {
+    if (!canRepair(shipKey)) return;
+
+    const quantity = repairQuantities[shipKey] || 1;
+    setRepairQueue({ ...repairQueue, [shipKey]: (repairQueue[shipKey] || 0) + quantity });
+    
+    // Simulate repairing
+    setTimeout(() => {
+      setRepairQueue(prev => {
+        const newQueue = { ...prev };
+        if (newQueue[shipKey] > quantity) {
+          newQueue[shipKey] -= quantity;
+        } else {
+          delete newQueue[shipKey];
+        }
+        return newQueue;
+      });
+    }, 1500); // Repair is faster than building
+  };
+
+  const updateRepairQuantity = (shipKey: string, delta: number) => {
+    const current = repairQuantities[shipKey] || 1;
+    const maxRepair = player.fleet[shipKey as keyof typeof player.fleet] || 0;
+    const newQuantity = Math.max(1, Math.min(maxRepair, current + delta));
+    setRepairQuantities({ ...repairQuantities, [shipKey]: newQuantity });
+  };
+
   const filteredShips = Object.entries(shipData).filter(
     ([_, info]) => info.category === selectedCategory
   );
 
   const totalBuildingShips = Object.values(buildQueue).reduce((sum, count) => sum + count, 0);
+  const totalRepairingShips = Object.values(repairQueue).reduce((sum, count) => sum + count, 0);
+  const hasDebris = selectedPlanet.debris.metal > 0 || selectedPlanet.debris.crystal > 0;
 
   return (
     <div className="space-y-6">
@@ -213,6 +279,16 @@ export default function Shipyard() {
                 <Clock className="w-4 h-4 text-neon-blue animate-spin" />
                 <span className="text-neon-blue font-rajdhani font-medium">
                   {totalBuildingShips} en construcción
+                </span>
+              </div>
+            </div>
+          )}
+          {totalRepairingShips > 0 && (
+            <div className="px-4 py-2 bg-neon-green/20 rounded-lg border border-neon-green/30">
+              <div className="flex items-center space-x-2">
+                <Wrench className="w-4 h-4 text-neon-green animate-pulse" />
+                <span className="text-neon-green font-rajdhani font-medium">
+                  {totalRepairingShips} reparando
                 </span>
               </div>
             </div>
@@ -239,6 +315,62 @@ export default function Shipyard() {
 
       {selectedPlanet.buildings.shipyard > 0 && (
         <>
+          {/* Mode Toggle and Debris Info */}
+          <div className="flex items-center justify-between">
+            <div className="flex space-x-1 bg-space-800 p-1 rounded-lg">
+              <button
+                onClick={() => setRepairMode(false)}
+                className={`px-4 py-2 text-sm font-rajdhani font-medium rounded-md transition-all duration-200 ${
+                  !repairMode
+                    ? 'bg-neon-blue text-white shadow-[0_0_10px_rgba(0,212,255,0.3)]'
+                    : 'text-gray-400 hover:text-white hover:bg-space-600'
+                }`}
+              >
+                <Rocket className="w-4 h-4 mr-2 inline" />
+                Construir
+              </button>
+              <button
+                onClick={() => setRepairMode(true)}
+                disabled={!hasDebris}
+                className={`px-4 py-2 text-sm font-rajdhani font-medium rounded-md transition-all duration-200 ${
+                  repairMode
+                    ? 'bg-neon-green text-white shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                    : hasDebris
+                    ? 'text-gray-400 hover:text-white hover:bg-space-600'
+                    : 'text-gray-600 cursor-not-allowed opacity-50'
+                }`}
+              >
+                <Wrench className="w-4 h-4 mr-2 inline" />
+                Reparar
+              </button>
+            </div>
+
+            {hasDebris && (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 px-3 py-2 bg-space-700/50 rounded-lg">
+                  <Recycle className="w-4 h-4 text-neon-green" />
+                  <span className="text-sm font-rajdhani font-medium text-white">
+                    Escombros disponibles:
+                  </span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    <span className="text-sm font-rajdhani text-white">
+                      {selectedPlanet.debris.metal.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-neon-blue rounded-full"></div>
+                    <span className="text-sm font-rajdhani text-white">
+                      {selectedPlanet.debris.crystal.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Category Tabs */}
           <div className="flex space-x-1 bg-space-800 p-1 rounded-lg">
             {categories.map((category) => (
@@ -258,6 +390,19 @@ export default function Shipyard() {
 
           {/* Current Fleet Overview */}
           <Card title="Flota Actual">
+            {repairMode && !hasDebris && (
+              <div className="mb-4 p-3 bg-neon-orange/10 border border-neon-orange/30 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <Recycle className="w-4 h-4 text-neon-orange" />
+                  <span className="text-sm text-neon-orange font-rajdhani font-medium">
+                    No hay escombros disponibles para reparaciones
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  Los escombros se obtienen de combates o pueden ser recolectados con naves recicladoras
+                </p>
+              </div>
+            )}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {Object.entries(player.fleet).filter(([_, count]) => count > 0).map(([shipKey, count]) => (
                 <div key={shipKey} className="text-center">
@@ -280,30 +425,46 @@ export default function Shipyard() {
           {/* Ships Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredShips.map(([shipKey, ship]) => {
-              const canAfford = canBuild(shipKey);
+              const canAfford = repairMode ? canRepair(shipKey) : canBuild(shipKey);
               const isBuilding = buildQueue[shipKey] > 0;
-              const quantity = buildQuantities[shipKey] || 1;
+              const isRepairing = repairQueue[shipKey] > 0;
+              const quantity = repairMode ? (repairQuantities[shipKey] || 1) : (buildQuantities[shipKey] || 1);
               const currentCount = player.fleet[shipKey as keyof typeof player.fleet] || 0;
+              const repairCost = repairMode ? {
+                metal: Math.floor(ship.cost.metal * 0.6 * quantity),
+                crystal: Math.floor(ship.cost.crystal * 0.6 * quantity),
+                deuterium: Math.floor(ship.cost.deuterium * 0.6 * quantity),
+              } : null;
 
               return (
                 <Card
                   key={shipKey}
                   className={`transition-all duration-300 hover:scale-105 ${
-                    canAfford ? 'hover:border-neon-blue/50' : 'hover:border-neon-red/50'
+                    repairMode && currentCount === 0 ? 'opacity-50' : ''
+                  } ${
+                    canAfford 
+                      ? repairMode 
+                        ? 'hover:border-neon-green/50' 
+                        : 'hover:border-neon-blue/50' 
+                      : 'hover:border-neon-red/50'
                   }`}
                 >
                   <div className="space-y-4">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-3">
                         <div className={`p-2 rounded-lg ${
-                          ship.category === 'Civil' ? 'bg-neon-blue/20' :
-                          ship.category === 'Combate' ? 'bg-neon-red/20' :
-                          'bg-neon-purple/20'
+                          repairMode
+                            ? 'bg-neon-green/20'
+                            : ship.category === 'Civil' ? 'bg-neon-blue/20' :
+                              ship.category === 'Combate' ? 'bg-neon-red/20' :
+                              'bg-neon-purple/20'
                         }`}>
                           <ship.icon className={`w-5 h-5 ${
-                            ship.category === 'Civil' ? 'text-neon-blue' :
-                            ship.category === 'Combate' ? 'text-neon-red' :
-                            'text-neon-purple'
+                            repairMode
+                              ? 'text-neon-green'
+                              : ship.category === 'Civil' ? 'text-neon-blue' :
+                                ship.category === 'Combate' ? 'text-neon-red' :
+                                'text-neon-purple'
                           }`} />
                         </div>
                         <div>
@@ -313,18 +474,61 @@ export default function Shipyard() {
                           <p className="text-xs text-gray-400">
                             Disponibles: {currentCount.toLocaleString()}
                           </p>
+                          {repairMode && currentCount === 0 && (
+                            <p className="text-xs text-neon-red">
+                              No hay naves para reparar
+                            </p>
+                          )}
                         </div>
                       </div>
-                      {isBuilding && (
+                      {(isBuilding || isRepairing) && (
                         <div className="px-2 py-1 bg-neon-orange/20 rounded text-xs text-neon-orange">
-                          +{buildQueue[shipKey]}
+                          {isBuilding ? `+${buildQueue[shipKey]}` : `🔧${repairQueue[shipKey]}`}
                         </div>
                       )}
                     </div>
 
-                    <p className="text-sm text-gray-300">{ship.description}</p>
+                    <div>
+                      <p className="text-sm text-gray-300">{ship.description}</p>
+                      {repairMode && (
+                        <p className="text-xs text-neon-green mt-1">
+                          💡 Reparar cuesta 60% del precio original usando escombros
+                        </p>
+                      )}
+                    </div>
 
                     <div className="space-y-2">
+                      {repairMode && repairCost ? (
+                        <>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-400">Metal (escombros):</span>
+                            <span className={`font-rajdhani font-medium ${
+                              selectedPlanet.debris.metal >= repairCost.metal ? 'text-neon-green' : 'text-neon-red'
+                            }`}>
+                              {repairCost.metal.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-400">Cristal (escombros):</span>
+                            <span className={`font-rajdhani font-medium ${
+                              selectedPlanet.debris.crystal >= repairCost.crystal ? 'text-neon-green' : 'text-neon-red'
+                            }`}>
+                              {repairCost.crystal.toLocaleString()}
+                            </span>
+                          </div>
+                          {repairCost.deuterium > 0 && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-400">Deuterio (escombros):</span>
+                              <span className={`font-rajdhani font-medium ${
+                                selectedPlanet.debris.deuterium >= repairCost.deuterium ? 'text-neon-green' : 'text-neon-red'
+                              }`}>
+                                {repairCost.deuterium.toLocaleString()}
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-400">Metal:</span>
                         <span className={`font-rajdhani font-medium ${
@@ -349,12 +553,14 @@ export default function Shipyard() {
                           {(ship.cost.deuterium * quantity).toLocaleString()}
                         </span>
                       </div>
+                        </>
+                      )}
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => updateQuantity(shipKey, -1)}
+                          onClick={() => repairMode ? updateRepairQuantity(shipKey, -1) : updateQuantity(shipKey, -1)}
                           className="w-8 h-8 bg-space-600 hover:bg-space-500 rounded-lg flex items-center justify-center transition-colors"
                         >
                           <Minus className="w-4 h-4 text-white" />
@@ -363,20 +569,27 @@ export default function Shipyard() {
                           {quantity}
                         </span>
                         <button
-                          onClick={() => updateQuantity(shipKey, 1)}
+                          onClick={() => repairMode ? updateRepairQuantity(shipKey, 1) : updateQuantity(shipKey, 1)}
                           className="w-8 h-8 bg-space-600 hover:bg-space-500 rounded-lg flex items-center justify-center transition-colors"
                         >
                           <Plus className="w-4 h-4 text-white" />
                         </button>
                       </div>
                       <Button
-                        variant={canAfford ? 'success' : 'secondary'}
+                        variant={canAfford ? (repairMode ? 'warning' : 'success') : 'secondary'}
                         size="sm"
-                        onClick={() => handleBuild(shipKey)}
-                        disabled={!canAfford || isBuilding}
-                        loading={isBuilding}
+                        onClick={() => repairMode ? handleRepair(shipKey) : handleBuild(shipKey)}
+                        disabled={!canAfford || isBuilding || isRepairing || (repairMode && currentCount === 0)}
+                        loading={isBuilding || isRepairing}
                       >
-                        {isBuilding ? 'Construyendo...' : 'Construir'}
+                        {isBuilding ? 'Construyendo...' : 
+                         isRepairing ? 'Reparando...' : 
+                         repairMode ? (
+                           <>
+                             <Wrench className="w-3 h-3 mr-1" />
+                             Reparar
+                           </>
+                         ) : 'Construir'}
                       </Button>
                     </div>
                   </div>

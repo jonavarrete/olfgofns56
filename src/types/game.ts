@@ -25,6 +25,7 @@ export interface Planet {
   resources: Resources;
   buildings: Buildings;
   production: ResourceProduction;
+  debris: Resources;
 }
 
 export interface Resources {

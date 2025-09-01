@@ -98,7 +98,7 @@ export default function GNNNewsItem({ news, isRead, onClick }: GNNNewsItemProps)
 
   return (
     <div
-      className={`p-4 rounded-lg border transition-all duration-200 cursor-pointer hover:border-neon-blue/30 group ${
+      className={`p-3 lg:p-4 rounded-lg border transition-all duration-200 cursor-pointer hover:border-neon-blue/30 group touch-manipulation ${
         isRead 
           ? 'bg-space-700/30 border-space-600' 
           : 'bg-space-700/50 border-space-500 shadow-[0_0_10px_rgba(0,212,255,0.1)]'
@@ -145,7 +145,7 @@ export default function GNNNewsItem({ news, isRead, onClick }: GNNNewsItemProps)
         </div>
 
         {/* Metadata */}
-        <div className="flex items-center space-x-4 text-xs">
+        <div className="flex items-center space-x-2 lg:space-x-4 text-xs flex-wrap">
           {news.location && (
             <div className="flex items-center space-x-1">
               <MapPin className="w-3 h-3 text-gray-400" />
@@ -217,33 +217,33 @@ export default function GNNNewsItem({ news, isRead, onClick }: GNNNewsItemProps)
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center space-x-2 pt-2">
+              <div className="flex items-center space-x-2 pt-2 flex-wrap gap-2">
                 {news.category === 'combat' && news.data?.combatReportId && (
-                  <button className="px-3 py-1 bg-neon-red/20 text-neon-red rounded text-xs font-rajdhani font-medium hover:bg-neon-red/30 transition-colors">
+                  <button className="px-3 py-1 bg-neon-red/20 text-neon-red rounded text-xs font-rajdhani font-medium hover:bg-neon-red/30 transition-colors touch-manipulation">
                     Ver Reporte de Combate
                   </button>
                 )}
                 
                 {news.category === 'exploration' && news.data?.alienRaceId && (
-                  <button className="px-3 py-1 bg-neon-purple/20 text-neon-purple rounded text-xs font-rajdhani font-medium hover:bg-neon-purple/30 transition-colors">
+                  <button className="px-3 py-1 bg-neon-purple/20 text-neon-purple rounded text-xs font-rajdhani font-medium hover:bg-neon-purple/30 transition-colors touch-manipulation">
                     Ver Raza Alienígena
                   </button>
                 )}
                 
                 {news.category === 'rankings' && news.data?.playerName && (
-                  <button className="px-3 py-1 bg-neon-blue/20 text-neon-blue rounded text-xs font-rajdhani font-medium hover:bg-neon-blue/30 transition-colors">
+                  <button className="px-3 py-1 bg-neon-blue/20 text-neon-blue rounded text-xs font-rajdhani font-medium hover:bg-neon-blue/30 transition-colors touch-manipulation">
                     Ver Perfil de Jugador
                   </button>
                 )}
                 
                 {news.category === 'diplomacy' && (news.data?.alliance1 || news.data?.alliance2) && (
-                  <button className="px-3 py-1 bg-neon-green/20 text-neon-green rounded text-xs font-rajdhani font-medium hover:bg-neon-green/30 transition-colors">
+                  <button className="px-3 py-1 bg-neon-green/20 text-neon-green rounded text-xs font-rajdhani font-medium hover:bg-neon-green/30 transition-colors touch-manipulation">
                     Ver Alianza
                   </button>
                 )}
 
                 {news.data?.coordinates && (
-                  <button className="px-3 py-1 bg-neon-orange/20 text-neon-orange rounded text-xs font-rajdhani font-medium hover:bg-neon-orange/30 transition-colors">
+                  <button className="px-3 py-1 bg-neon-orange/20 text-neon-orange rounded text-xs font-rajdhani font-medium hover:bg-neon-orange/30 transition-colors touch-manipulation">
                     Ir a {news.data.coordinates}
                   </button>
                 )}

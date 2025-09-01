@@ -142,21 +142,21 @@ export default function GNNPanel({ onClose, onNavigate = () => {} }: GNNPanelPro
   return (
     <>
       {/* Main GNN Panel */}
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-card-gradient border border-space-600 rounded-lg max-w-6xl w-full h-[95vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 lg:p-4">
+        <div className="bg-card-gradient border border-space-600 rounded-lg max-w-6xl w-full h-[98vh] lg:h-[95vh] flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="p-6 border-b border-space-600">
+          <div className="p-4 lg:p-6 border-b border-space-600">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-neon-red/20 rounded-lg flex items-center justify-center animate-pulse">
                   <Radio className="w-6 h-6 text-neon-red" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h2 className="text-2xl font-orbitron font-bold text-white">
                     Galactic News Network
                   </h2>
                   <div className="flex items-center space-x-4 mt-1">
-                    <p className="text-gray-400">
+                    <p className="text-gray-400 hidden sm:block">
                       Transmitiendo desde {currentUniverse}
                     </p>
                     <div className="flex items-center space-x-2">
@@ -169,9 +169,9 @@ export default function GNNPanel({ onClose, onNavigate = () => {} }: GNNPanelPro
                 </div>
               </div>
               
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 lg:space-x-3">
                 {state.unreadCount > 0 && (
-                  <Button variant="secondary" size="sm" onClick={markAllAsRead}>
+                  <Button variant="secondary" size="sm" onClick={markAllAsRead} className="hidden sm:flex">
                     <Eye className="w-4 h-4 mr-2" />
                     Marcar todo leído ({state.unreadCount})
                   </Button>
@@ -182,6 +182,7 @@ export default function GNNPanel({ onClose, onNavigate = () => {} }: GNNPanelPro
                   size="sm" 
                   onClick={refreshNews}
                   disabled={state.loading}
+                  className="hidden sm:flex"
                 >
                   <RefreshCw className={`w-4 h-4 mr-2 ${state.loading ? 'animate-spin' : ''}`} />
                   Actualizar
@@ -189,7 +190,7 @@ export default function GNNPanel({ onClose, onNavigate = () => {} }: GNNPanelPro
                 
                 <button
                   onClick={() => setShowSettings(true)}
-                  className="p-2 text-gray-400 hover:text-white transition-colors"
+                  className="p-2 text-gray-400 hover:text-white transition-colors hidden sm:block"
                 >
                   <Settings className="w-5 h-5" />
                 </button>
@@ -204,9 +205,9 @@ export default function GNNPanel({ onClose, onNavigate = () => {} }: GNNPanelPro
             </div>
           </div>
 
-          <div className="flex flex-1 min-h-0">
+          <div className="flex flex-col lg:flex-row flex-1 min-h-0">
             {/* Sidebar */}
-            <div className="w-80 border-r border-space-600 flex flex-col">
+            <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-space-600 flex flex-col max-h-48 lg:max-h-none">
               <div className="p-4 space-y-4 flex-1 overflow-y-auto">
                 {/* Search */}
                 <div className="relative">
@@ -221,7 +222,7 @@ export default function GNNPanel({ onClose, onNavigate = () => {} }: GNNPanelPro
                 </div>
 
                 {/* Category Filters */}
-                <div>
+                <div className="hidden lg:block">
                   <h3 className="text-sm font-rajdhani font-semibold text-gray-400 mb-3">
                     Categorías
                   </h3>
@@ -253,8 +254,31 @@ export default function GNNPanel({ onClose, onNavigate = () => {} }: GNNPanelPro
                   </div>
                 </div>
 
+                {/* Mobile Category Filters */}
+                <div className="lg:hidden">
+                  <div className="flex space-x-2 overflow-x-auto pb-2">
+                    {Object.entries(categoryConfig).map(([category, config]) => {
+                      const Icon = config.icon;
+                      return (
+                        <button
+                          key={category}
+                          onClick={() => setSelectedCategory(category as CategoryFilter)}
+                          className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 whitespace-nowrap ${
+                            selectedCategory === category
+                              ? 'bg-neon-blue/20 text-neon-blue border border-neon-blue/30'
+                              : 'text-gray-400 hover:text-white hover:bg-space-700/50'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          <span className="font-rajdhani font-medium text-sm">{config.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* Breaking News */}
-                <div>
+                <div className="hidden lg:block">
                   <h3 className="text-sm font-rajdhani font-semibold text-gray-400 mb-3 flex items-center">
                     <AlertTriangle className="w-4 h-4 mr-2 text-neon-red animate-pulse" />
                     Última Hora
@@ -281,7 +305,7 @@ export default function GNNPanel({ onClose, onNavigate = () => {} }: GNNPanelPro
                 </div>
 
                 {/* Live Stats */}
-                <div className="p-3 bg-space-700/30 rounded-lg border border-space-600">
+                <div className="p-3 bg-space-700/30 rounded-lg border border-space-600 hidden lg:block">
                   <h4 className="text-sm font-rajdhani font-semibold text-white mb-2">
                     Estadísticas en Vivo
                   </h4>
@@ -325,10 +349,39 @@ export default function GNNPanel({ onClose, onNavigate = () => {} }: GNNPanelPro
                     </p>
                   </div>
                   
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 lg:space-x-4">
+                    {/* Mobile Action Buttons */}
+                    <div className="flex items-center space-x-1 sm:hidden">
+                      {state.unreadCount > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          className="p-2 text-gray-400 hover:text-white transition-colors"
+                          title="Marcar todo leído"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        onClick={refreshNews}
+                        disabled={state.loading}
+                        className="p-2 text-gray-400 hover:text-white transition-colors"
+                        title="Actualizar"
+                      >
+                        <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
+                      </button>
+                      <button
+                        onClick={() => setShowSettings(true)}
+                        className="p-2 text-gray-400 hover:text-white transition-colors"
+                        title="Configuración"
+                      >
+                        <Settings className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
                     <div className="flex items-center space-x-1 text-xs text-gray-400">
                       <Clock className="w-3 h-3" />
-                      <span>Actualizado {formatTimeAgo(state.lastUpdate)}</span>
+                      <span className="hidden sm:inline">Actualizado {formatTimeAgo(state.lastUpdate)}</span>
+                      <span className="sm:hidden">{formatTimeAgo(state.lastUpdate)}</span>
                     </div>
                   </div>
                 </div>
@@ -376,7 +429,7 @@ export default function GNNPanel({ onClose, onNavigate = () => {} }: GNNPanelPro
 
       {/* Settings Panel - Using Portal */}
       {mounted && showSettings && createPortal(
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-2 lg:p-4">
           <GNNSettings
             settings={state.settings}
             onUpdate={updateSettings}

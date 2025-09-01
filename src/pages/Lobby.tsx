@@ -289,7 +289,7 @@ export default function Lobby() {
       </header>
 
       {/* Main Content */}
-      <main className="relative z-0 p-6">
+      <main className="relative z-0 p-4 lg:p-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <h2 className="text-3xl font-orbitron font-bold text-white mb-2">
@@ -300,7 +300,7 @@ export default function Lobby() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             {/* Universe List */}
             <div className="lg:col-span-2">
               <Card title="Universos Disponibles" glowing>
@@ -315,19 +315,19 @@ export default function Lobby() {
                       <div
                         key={universe.id}
                         onClick={() => setSelectedUniverseId(universe.id)}
-                        className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+                        className={`p-3 lg:p-4 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.02] touch-manipulation ${
                           selectedUniverseId === universe.id
                             ? 'bg-neon-blue/10 border-neon-blue/50'
                             : 'bg-space-700/30 border-space-600 hover:border-neon-purple/30'
                         }`}
                       >
                         <div className="flex items-start justify-between">
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-3 mb-2">
                               <h3 className="text-lg font-orbitron font-bold text-white">
                                 {universe.name}
                               </h3>
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center space-x-2 flex-wrap">
                                 <span className={`px-2 py-1 rounded text-xs font-rajdhani font-medium ${getUniverseStatusColor(universe.status)} bg-current/10`}>
                                   {getUniverseStatusText(universe.status)}
                                 </span>
@@ -339,7 +339,7 @@ export default function Lobby() {
                             
                             <p className="text-sm text-gray-400 mb-3">{universe.description}</p>
                             
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 text-xs">
                               <div className="flex items-center space-x-2">
                                 <Users className="w-3 h-3 text-gray-400" />
                                 <span className="text-gray-400">
@@ -350,12 +350,12 @@ export default function Lobby() {
                                 <Zap className="w-3 h-3 text-neon-orange" />
                                 <span className="text-gray-400">Velocidad x{universe.speed}</span>
                               </div>
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center space-x-2 col-span-2 lg:col-span-1">
                                 <Clock className="w-3 h-3 text-gray-400" />
                                 <span className="text-gray-400">Inicio: {formatDate(universe.startDate)}</span>
                               </div>
                               {universe.playerData?.hasAccount && (
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-2 col-span-2 lg:col-span-1">
                                   <Trophy className="w-3 h-3 text-neon-blue" />
                                   <span className="text-neon-blue">Rango #{universe.playerData.rank}</span>
                                 </div>
@@ -364,7 +364,7 @@ export default function Lobby() {
                           </div>
 
                           {universe.playerData?.hasAccount && (
-                            <div className="ml-4">
+                            <div className="ml-2 lg:ml-4 flex-shrink-0">
                               <div className="px-3 py-1 bg-neon-green/20 text-neon-green rounded-full text-xs font-rajdhani font-medium">
                                 Cuenta Existente
                               </div>
@@ -402,7 +402,7 @@ export default function Lobby() {
             </div>
 
             {/* Universe Details */}
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               {selectedUniverse ? (
                 <div>
                   <Card title="Detalles del Universo" glowing>
@@ -514,13 +514,13 @@ export default function Lobby() {
                               ) : (
                                 <AlertTriangle className="w-4 h-4 text-gray-400" />
                               )}
-                              <div>
+                              <div className="min-w-0 flex-1">
                                 <p className={`text-sm font-rajdhani font-medium ${
                                   feature.enabled ? 'text-white' : 'text-gray-400'
                                 }`}>
                                   {feature.name}
                                 </p>
-                                <p className="text-xs text-gray-500">{feature.description}</p>
+                                <p className="text-xs text-gray-500 hidden sm:block">{feature.description}</p>
                               </div>
                             </div>
                           ))}
@@ -533,7 +533,7 @@ export default function Lobby() {
                           variant="primary"
                           onClick={handleJoinUniverse}
                           disabled={selectedUniverse.status === 'maintenance' || selectedUniverse.status === 'ending'}
-                          className="w-full py-3 font-rajdhani font-semibold"
+                          className="w-full py-3 font-rajdhani font-semibold touch-manipulation"
                         >
                           <Play className="w-4 h-4 mr-2" />
                           {selectedUniverse.playerData?.hasAccount ? 'Continuar Partida' : 'Unirse al Universo'}

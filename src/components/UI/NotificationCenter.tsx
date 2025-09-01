@@ -72,7 +72,7 @@ export default function NotificationCenter() {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full right-0 mt-2 w-96 bg-card-gradient border border-space-600 rounded-lg shadow-xl z-50 backdrop-blur-sm max-h-96 overflow-hidden">
+          <div className="absolute top-full right-0 mt-2 w-80 lg:w-96 max-w-[90vw] bg-card-gradient border border-space-600 rounded-lg shadow-xl z-50 backdrop-blur-sm max-h-96 overflow-hidden">
             <div className="relative p-4 border-b border-space-600">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-orbitron font-semibold text-white">
@@ -82,7 +82,7 @@ export default function NotificationCenter() {
                   {state.notifications.length > 0 && (
                     <button
                       onClick={clearAllNotifications}
-                      className="text-xs text-gray-400 hover:text-white transition-colors"
+                      className="text-xs text-gray-400 hover:text-white transition-colors touch-manipulation"
                     >
                       Limpiar todo
                     </button>
@@ -112,7 +112,7 @@ export default function NotificationCenter() {
                       <div
                         key={notification.id}
                         onClick={() => markNotificationAsRead(notification.id)}
-                        className={`p-4 border-b border-space-600 cursor-pointer hover:bg-space-600/30 transition-colors ${
+                        className={`p-4 border-b border-space-600 cursor-pointer hover:bg-space-600/30 transition-colors touch-manipulation ${
                           !notification.read ? 'bg-space-700/20' : ''
                         }`}
                       >

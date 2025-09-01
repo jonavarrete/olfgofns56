@@ -27,21 +27,21 @@ export default function ResourceDisplay({ resources, showDebris = false }: Resou
 
   const hasDebris = selectedPlanet.debris.metal > 0 || selectedPlanet.debris.crystal > 0;
   return (
-    <div className="flex items-center space-x-4 flex-wrap">
+    <div className="flex items-center space-x-2 lg:space-x-4 flex-wrap">
       {resourceConfig.map(({ key, icon: Icon, color, bgColor }) => (
         <div
           key={key}
-          className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${bgColor} backdrop-blur-sm transition-all duration-200 hover:scale-105`}
+          className={`flex items-center space-x-1 lg:space-x-2 px-2 lg:px-3 py-2 rounded-lg ${bgColor} backdrop-blur-sm transition-all duration-200 hover:scale-105 flex-shrink-0`}
         >
           <Icon className={`w-4 h-4 ${color}`} />
-          <span className="text-sm font-rajdhani font-medium text-white">
+          <span className="text-xs lg:text-sm font-rajdhani font-medium text-white">
             {formatNumber(resources[key as keyof Resources])}
           </span>
         </div>
       ))}
       
       {showDebris && hasDebris && (
-        <div className="flex items-center space-x-3 px-3 py-2 bg-neon-green/10 border border-neon-green/30 rounded-lg">
+        <div className="flex items-center space-x-2 lg:space-x-3 px-2 lg:px-3 py-2 bg-neon-green/10 border border-neon-green/30 rounded-lg flex-shrink-0">
           <Recycle className="w-4 h-4 text-neon-green" />
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-1">

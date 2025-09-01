@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { GameProvider } from './context/GameContext';
@@ -58,6 +58,7 @@ function GameWrapper() {
   const { state } = useAuth();
   const { user } = state;
   const selectedUniverse = localStorage.getItem('selected_universe');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -71,11 +72,11 @@ function GameWrapper() {
     <GameProvider>
       <div className="min-h-screen bg-space-gradient text-white relative">
         <SpaceBackground />
-        <div className="flex relative z-10">
-          <Sidebar />
-          <div className="flex-1 relative">
-            <Header />
-            <main className="p-6 relative">
+        <div className="flex relative z-10 min-h-screen">
+          <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+          <div className="flex-1 relative flex flex-col min-w-0">
+            <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
+            <main className="flex-1 p-4 lg:p-6 relative overflow-x-auto">
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/empire" element={<Empire />} />

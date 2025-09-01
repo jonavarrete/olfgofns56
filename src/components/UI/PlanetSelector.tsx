@@ -11,14 +11,14 @@ export default function PlanetSelector() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-3 px-4 py-2 bg-space-700/50 rounded-lg border border-space-600 hover:border-neon-blue/50 transition-all duration-200"
+        className="flex items-center space-x-2 lg:space-x-3 px-2 lg:px-4 py-2 bg-space-700/50 rounded-lg border border-space-600 hover:border-neon-blue/50 transition-all duration-200 min-w-0"
       >
         <Globe className="w-5 h-5 text-neon-blue" />
-        <div className="text-left">
+        <div className="text-left min-w-0 flex-1">
           <p className="text-sm font-rajdhani font-medium text-white">
             {selectedPlanet.name}
           </p>
-          <p className="text-xs text-gray-400">{selectedPlanet.coordinates}</p>
+          <p className="text-xs text-gray-400 hidden sm:block">{selectedPlanet.coordinates}</p>
         </div>
         <ChevronDown
           className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
@@ -33,7 +33,7 @@ export default function PlanetSelector() {
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 mt-2 w-80 bg-card-gradient border border-space-600 rounded-lg shadow-xl z-20 backdrop-blur-sm">
+          <div className="absolute top-full left-0 mt-2 w-80 max-w-[90vw] bg-card-gradient border border-space-600 rounded-lg shadow-xl z-20 backdrop-blur-sm">
             <div className="relative p-4 border-b border-space-600">
               <h3 className="text-sm font-rajdhani font-medium text-white">
                 Seleccionar Planeta
@@ -47,7 +47,7 @@ export default function PlanetSelector() {
                     selectPlanet(planet);
                     setIsOpen(false);
                   }}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 hover:bg-space-600/50 transition-colors ${
+                  className={`w-full flex items-center space-x-3 px-4 py-3 hover:bg-space-600/50 transition-colors touch-manipulation ${
                     selectedPlanet.id === planet.id ? 'bg-neon-blue/20' : ''
                   }`}
                 >

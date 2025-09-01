@@ -79,7 +79,7 @@ export default function Login() {
 
       <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
         <div className="w-full max-w-6xl">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
             {/* Login Form Column */}
             <div className="w-full max-w-md mx-auto lg:mx-0">
           {/* Logo and Title */}
@@ -224,7 +224,7 @@ export default function Login() {
                 type="submit"
                 variant="primary"
                 loading={state.loading}
-                className="w-full py-3 text-base font-rajdhani font-semibold"
+                className="w-full py-3 text-base font-rajdhani font-semibold touch-manipulation"
               >
                 {isRegister ? 'Crear Cuenta' : 'Iniciar Sesión'}
               </Button>
@@ -236,7 +236,7 @@ export default function Login() {
                 <Button
                   variant="secondary"
                   onClick={handleDemoLogin}
-                  className="w-full py-2 font-rajdhani font-medium"
+                  className="w-full py-2 font-rajdhani font-medium touch-manipulation"
                   disabled={state.loading}
                 >
                   <Star className="w-4 h-4 mr-2" />
@@ -281,7 +281,7 @@ export default function Login() {
             </div>
 
             {/* News Column */}
-            <div className="w-full max-w-md mx-auto lg:mx-0 lg:mt-16">
+            <div className="w-full max-w-md mx-auto lg:mx-0 lg:mt-16 order-first lg:order-last">
               <div className="space-y-6">
                 <div className="text-center lg:text-left">
                   <h2 className="text-2xl font-orbitron font-bold text-white mb-2">

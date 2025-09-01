@@ -173,15 +173,15 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <Card className="hover:scale-105 transition-transform duration-300">
           <div className="flex items-center">
             <div className="p-3 bg-neon-blue/20 rounded-lg">
               <Building className="w-6 h-6 text-neon-blue" />
             </div>
-            <div className="ml-4">
+            <div className="ml-2 lg:ml-4 min-w-0">
               <p className="text-sm text-gray-400">Campos Usados</p>
-              <p className="text-2xl font-orbitron font-bold text-white">
+              <p className="text-lg lg:text-2xl font-orbitron font-bold text-white">
                 {selectedPlanet.usedFields}/{selectedPlanet.fields}
               </p>
             </div>
@@ -193,9 +193,9 @@ export default function Dashboard() {
             <div className="p-3 bg-neon-green/20 rounded-lg">
               <Rocket className="w-6 h-6 text-neon-green" />
             </div>
-            <div className="ml-4">
+            <div className="ml-2 lg:ml-4 min-w-0">
               <p className="text-sm text-gray-400">Naves Totales</p>
-              <p className="text-2xl font-orbitron font-bold text-white">
+              <p className="text-lg lg:text-2xl font-orbitron font-bold text-white">
                 {totalFleetSize.toLocaleString()}
               </p>
             </div>
@@ -207,9 +207,9 @@ export default function Dashboard() {
             <div className="p-3 bg-neon-purple/20 rounded-lg">
               <FlaskConical className="w-6 h-6 text-neon-purple" />
             </div>
-            <div className="ml-4">
+            <div className="ml-2 lg:ml-4 min-w-0">
               <p className="text-sm text-gray-400">Investigación</p>
-              <p className="text-2xl font-orbitron font-bold text-white">
+              <p className="text-lg lg:text-2xl font-orbitron font-bold text-white">
                 {researchLevel}
               </p>
             </div>
@@ -221,9 +221,9 @@ export default function Dashboard() {
             <div className="p-3 bg-neon-orange/20 rounded-lg">
               <Target className="w-6 h-6 text-neon-orange" />
             </div>
-            <div className="ml-4">
+            <div className="ml-2 lg:ml-4 min-w-0">
               <p className="text-sm text-gray-400">Misiones Activas</p>
-              <p className="text-2xl font-orbitron font-bold text-white">
+              <p className="text-lg lg:text-2xl font-orbitron font-bold text-white">
                 {activeMissions.length}
               </p>
             </div>
@@ -233,7 +233,7 @@ export default function Dashboard() {
 
       {/* Construction Queues */}
       {(activeBuildings.length > 0 || activeResearch.length > 0 || activeShipyard.length > 0) && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
           {/* Building Queue */}
           {activeBuildings.length > 0 && (
             <Card title="Cola de Construcción" glowing>
@@ -247,11 +247,11 @@ export default function Dashboard() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
                           <Building className="w-4 h-4 text-neon-blue" />
-                          <div>
+                          <div className="min-w-0">
                             <p className="text-sm font-rajdhani font-medium text-white">
                               {getBuildingName(item.building)} Nv.{item.level}
                             </p>
-                            <p className="text-xs text-gray-400">{item.planetName}</p>
+                            <p className="text-xs text-gray-400 truncate">{item.planetName}</p>
                           </div>
                         </div>
                         <div className="text-right">
@@ -297,7 +297,7 @@ export default function Dashboard() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
                           <FlaskConical className="w-4 h-4 text-neon-purple" />
-                          <div>
+                          <div className="min-w-0">
                             <p className="text-sm font-rajdhani font-medium text-white">
                               {getResearchName(item.research)} Nv.{item.level}
                             </p>
@@ -346,11 +346,11 @@ export default function Dashboard() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
                           <Factory className="w-4 h-4 text-neon-green" />
-                          <div>
+                          <div className="min-w-0">
                             <p className="text-sm font-rajdhani font-medium text-white">
                               {item.quantity}x {getShipName(item.ship)}
                             </p>
-                            <p className="text-xs text-gray-400">{item.planetName}</p>
+                            <p className="text-xs text-gray-400 truncate">{item.planetName}</p>
                           </div>
                         </div>
                         <div className="text-right">
@@ -385,7 +385,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Production Overview */}
         <Card title="Producción por Hora" glowing>
           <div className="space-y-4">
@@ -437,12 +437,12 @@ export default function Dashboard() {
                     <div className={`w-2 h-2 rounded-full ${
                       mission.status === 'outbound' ? 'bg-neon-orange' : 'bg-neon-blue'
                     } animate-pulse`}></div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm text-white capitalize">
                         {mission.type === 'attack' ? 'Ataque' : 
                          mission.type === 'transport' ? 'Transporte' : mission.type}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-400 truncate">
                         {mission.from} → {mission.to}
                       </p>
                     </div>
@@ -468,7 +468,7 @@ export default function Dashboard() {
               <div className="w-6 h-6 bg-neon-red/20 rounded flex items-center justify-center animate-pulse">
                 <Radio className="w-4 h-4 text-neon-red" />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <h4 className="font-rajdhani font-semibold text-white">GNN Live</h4>
                 <p className="text-xs text-gray-400">Noticias galácticas en tiempo real</p>
               </div>
@@ -498,7 +498,7 @@ export default function Dashboard() {
                         markAsRead(news.id);
                         setShowGNNPanel(true);
                       }}
-                      className="p-3 bg-space-700/30 rounded border border-space-600 hover:border-neon-blue/30 cursor-pointer transition-all duration-200 group"
+                      className="p-3 bg-space-700/30 rounded border border-space-600 hover:border-neon-blue/30 cursor-pointer transition-all duration-200 group touch-manipulation"
                     >
                       <div className="flex items-start space-x-2">
                         <div className={`w-1.5 h-1.5 rounded-full mt-2 ${
@@ -544,18 +544,18 @@ export default function Dashboard() {
 
       {/* Planet Overview */}
       <Card title="Planetas del Imperio">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {player.planets.map((planet) => (
             <div
               key={planet.id}
-              className={`p-4 rounded-lg border transition-all duration-200 hover:scale-105 ${
+              className={`p-4 rounded-lg border transition-all duration-200 hover:scale-105 touch-manipulation ${
                 planet.id === selectedPlanet.id
                   ? 'bg-neon-blue/10 border-neon-blue/50'
                   : 'bg-space-700/50 border-space-500 hover:border-neon-purple/50'
               }`}
             >
               <div className="flex items-start justify-between">
-                <div>
+                <div className="min-w-0 flex-1">
                   <h4 className="text-lg font-rajdhani font-medium text-white">
                     {planet.name}
                   </h4>

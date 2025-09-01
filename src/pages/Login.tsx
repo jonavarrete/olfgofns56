@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/UI/Button';
 import { 
@@ -15,13 +16,7 @@ import {
 
 export default function Login() {
   const { state, login, register } = useAuth();
-  
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (state.isAuthenticated && state.user) {
-      window.location.href = '/lobby';
-    }
-  }, [state.isAuthenticated, state.user]);
+  const navigate = useNavigate();
   
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -32,6 +27,12 @@ export default function Login() {
     confirmPassword: ''
   });
 
+  // Handle successful authentication
+  useEffect(() => {
+    if (state.isAuthenticated && state.user && !state.loading) {
+      navigate('/lobby', { replace: true });
+    }
+  }, [state.isAuthenticated, state.user, state.loading, navigate]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -50,14 +51,14 @@ export default function Login() {
     }
   };
 
-  const handleDemoLogin = () => {
+  const handleDemoLogin = async () => {
     setFormData({
       email: 'demo@galaxy.com',
       password: 'demo123',
       username: '',
       confirmPassword: ''
     });
-    login('demo@galaxy.com', 'demo123');
+    await login('demo@galaxy.com', 'demo123');
   };
 
   return (

@@ -50,7 +50,7 @@ export default function Header() {
           <button 
             onClick={() => {
               localStorage.removeItem('selected_universe');
-              window.location.href = '/lobby';
+              window.location.replace('/lobby');
             }}
             className="relative p-2 text-gray-400 hover:text-neon-orange transition-colors"
             title="Volver al Lobby"
@@ -60,7 +60,7 @@ export default function Header() {
           <button 
             onClick={() => {
               localStorage.clear();
-              window.location.href = '/login';
+              window.location.replace('/login');
             }}
             className="relative p-2 text-gray-400 hover:text-neon-red transition-colors"
             title="Cerrar Sesión"

@@ -57,7 +57,7 @@ export default function Sidebar() {
           <button 
             onClick={() => {
               localStorage.removeItem('selected_universe');
-              window.location.href = '/lobby';
+              window.location.replace('/lobby');
             }}
             className="relative p-2 text-gray-400 hover:text-neon-orange transition-colors"
             title="Volver al Lobby"

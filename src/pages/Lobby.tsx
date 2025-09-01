@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLobby } from '../hooks/useLobby';
 import Button from '../components/UI/Button';
@@ -30,9 +31,16 @@ import { Universe } from '../types/auth';
 export default function Lobby() {
   const { state: authState, logout, updateUser } = useAuth();
   const { state: lobbyState, selectUniverse, joinUniverse, refreshUniverses } = useLobby();
+  const navigate = useNavigate();
   const [selectedUniverseId, setSelectedUniverseId] = useState<string | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
+  // Check authentication status
+  useEffect(() => {
+    if (!authState.isAuthenticated || !authState.user) {
+      navigate('/login', { replace: true });
+    }
+  }, [authState.isAuthenticated, authState.user, navigate]);
   const selectedUniverse = lobbyState.universes.find(u => u.id === selectedUniverseId);
 
   const getUniverseStatusColor = (status: Universe['status']) => {
@@ -84,12 +92,16 @@ export default function Lobby() {
     
     try {
       await joinUniverse(selectedUniverse.id);
-      // Navigation to game will be handled by the main App component
+      navigate('/', { replace: true });
     } catch (error) {
       console.error('Error joining universe:', error);
     }
   };
 
+  // Don't render if not authenticated
+  if (!authState.isAuthenticated || !authState.user) {
+    return null;
+  }
   return (
     <div className="min-h-screen bg-space-gradient relative">
       {/* Animated Background */}

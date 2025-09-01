@@ -25,11 +25,26 @@ import Trade from './pages/Trade';
 import Officers from './pages/Officers';
 import TechnologyTree from './pages/TechnologyTree';
 import ResourceCalculator from './pages/ResourceCalculator';
+import { Rocket} from 'lucide-react';
 
 // Componente para proteger rutas que requieren autenticación
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { state } = useAuth();
-  const { user, isAuthenticated } = state;
+  const { user, isAuthenticated, loading } = state;
+  
+  // Show loading while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-space-gradient flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-neon-blue/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-glow">
+            <Rocket className="w-8 h-8 text-neon-blue animate-float" />
+          </div>
+          <p className="text-gray-400 font-rajdhani">Verificando autenticación...</p>
+        </div>
+      </div>
+    );
+  }
   
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;

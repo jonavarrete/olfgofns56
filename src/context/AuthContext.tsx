@@ -70,15 +70,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check for existing session on mount
   useEffect(() => {
+    const checkAuth = async () => {
+      dispatch({ type: 'LOGIN_START' });
+      
+      try {
     const savedUser = localStorage.getItem('galactic_empire_user');
     if (savedUser) {
-      try {
         const user = JSON.parse(savedUser);
+          // Simulate auth verification delay
+          await new Promise(resolve => setTimeout(resolve, 500));
         dispatch({ type: 'LOGIN_SUCCESS', payload: user });
+        } else {
+          dispatch({ type: 'LOGIN_ERROR', payload: '' });
+        }
       } catch (error) {
+        console.error('Auth check failed:', error);
         localStorage.removeItem('galactic_empire_user');
+        dispatch({ type: 'LOGIN_ERROR', payload: '' });
       }
-    }
+    };
+    
+    checkAuth();
   }, []);
 
   const login = async (email: string, password: string) => {

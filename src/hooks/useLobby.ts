@@ -192,9 +192,6 @@ export function useLobby() {
     // In a real app, this would make an API call to join the universe
     // For now, we'll just simulate the process
     await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Navigate to dashboard
-    window.location.href = '/';
   };
 
   const refreshUniverses = () => {

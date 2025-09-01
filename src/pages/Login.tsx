@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/UI/Button';
 import { 
@@ -15,6 +15,14 @@ import {
 
 export default function Login() {
   const { state, login, register } = useAuth();
+  
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (state.isAuthenticated && state.user) {
+      window.location.href = '/lobby';
+    }
+  }, [state.isAuthenticated, state.user]);
+  
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({

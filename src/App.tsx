@@ -28,9 +28,10 @@ import ResourceCalculator from './pages/ResourceCalculator';
 
 // Componente para proteger rutas que requieren autenticación
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const { user, isAuthenticated } = state;
   
-  if (!user) {
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }
   
@@ -39,7 +40,8 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
 // Game wrapper component that checks for universe selection
 function GameWrapper() {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const { user } = state;
   const selectedUniverse = localStorage.getItem('selected_universe');
   
   if (!user) {

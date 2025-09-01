@@ -1,3 +1,69 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom slider styles */
+.slider-metal::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #9CA3AF;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(156, 163, 175, 0.5);
+}
+
+.slider-crystal::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #00D4FF;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.slider-deuterium::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #10B981;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.slider-energy::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #F59E0B;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+.slider-metal::-webkit-slider-track,
+.slider-crystal::-webkit-slider-track,
+.slider-deuterium::-webkit-slider-track,
+.slider-energy::-webkit-slider-track {
+  height: 8px;
+  border-radius: 4px;
+  background: #374151;
+}
+
+.slider-metal::-webkit-slider-track {
+  background: linear-gradient(to right, #374151 0%, #9CA3AF 100%);
+}
+
+.slider-crystal::-webkit-slider-track {
+  background: linear-gradient(to right, #374151 0%, #00D4FF 100%);
+}
+
+.slider-deuterium::-webkit-slider-track {
+  background: linear-gradient(to right, #374151 0%, #10B981 100%);
+}
+
+.slider-energy::-webkit-slider-track {
+  background: linear-gradient(to right, #374151 0%, #F59E0B 100%);
+}

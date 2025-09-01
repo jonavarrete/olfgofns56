@@ -21,6 +21,7 @@ import PvEMissions from './pages/PvEMissions';
 import Trade from './pages/Trade';
 import Officers from './pages/Officers';
 import TechnologyTree from './pages/TechnologyTree';
+import ResourceCalculator from './pages/ResourceCalculator';
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
                   <Route path="/officers" element={<Officers />} />
                   <Route path="/galaxy" element={<Galaxy />} />
                   <Route path="/trade" element={<Trade />} />
+                  <Route path="/resource-calculator" element={<ResourceCalculator />} />
                   <Route path="/technology-tree" element={<TechnologyTree />} />
                   <Route path="/simulator" element={<Simulator />} />
                   <Route path="/pve-missions" element={<PvEMissions />} />

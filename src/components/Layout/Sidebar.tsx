@@ -29,6 +29,7 @@ const navigation = [
   { name: 'Oficiales', href: '/officers', icon: Crown },
   { name: 'Galaxia', href: '/galaxy', icon: Globe },
   { name: 'Comercio', href: '/trade', icon: Store },
+  { name: 'Calculador', href: '/resource-calculator', icon: Calculator },
   { name: 'Árbol Tecnológico', href: '/technology-tree', icon: Target },
   { name: 'Simulador', href: '/simulator', icon: Calculator },
   { name: 'Misiones PvE', href: '/pve-missions', icon: Target },

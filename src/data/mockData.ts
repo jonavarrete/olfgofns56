@@ -2,6 +2,8 @@ import { Player, Planet, Buildings, Research, FleetShips, Resources, Mission, Al
 import { DiplomaticPact } from '../types/game';
 import { OfficerState } from '../types/officers';
 import { baseOfficers } from './officersData';
+import { GNNState } from '../types/gnn';
+import { mockGNNNews } from './gnnData';
 
 export const mockResources: Resources = {
   metal: 150000,
@@ -89,6 +91,26 @@ export const mockOfficerState: OfficerState = {
   officerSlots: 8,
   usedSlots: 2,
 };
+
+export const mockGNNState: GNNState = {
+  news: mockGNNNews,
+  settings: {
+    combatThreshold: 100000,
+    showOwnBattles: true,
+    showAllianceBattles: true,
+    showDiplomacy: true,
+    showExploration: true,
+    showRankings: true,
+    showEvents: true,
+    autoRefresh: true,
+    refreshInterval: 60,
+    maxNewsItems: 100
+  },
+  loading: false,
+  lastUpdate: Date.now(),
+  unreadCount: 3
+};
+
 export const mockPlanets: Planet[] = [
   {
     id: '1',

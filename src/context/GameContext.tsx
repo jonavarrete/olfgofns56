@@ -163,6 +163,7 @@ const initialState: GameState = {
       successRate: 95.7,
     },
   },
+  gnn: mockGNNState,
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {

@@ -53,6 +53,17 @@ export default function Sidebar() {
             </h1>
             <p className="text-xs text-gray-400">v2.0 Next Gen</p>
           </div>
+          
+          <button 
+            onClick={() => {
+              localStorage.removeItem('selected_universe');
+              window.location.href = '/lobby';
+            }}
+            className="relative p-2 text-gray-400 hover:text-neon-orange transition-colors"
+            title="Volver al Lobby"
+          >
+            <Globe className="w-5 h-5" />
+          </button>
         </div>
       </div>
 

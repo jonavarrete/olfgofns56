@@ -12,6 +12,13 @@ import {
   mockDiplomaticPacts
 } from '../data/mockData';
 
+// Add trade property to GameState interface
+declare module '../types/game' {
+  interface GameState {
+    trade: TradeState;
+  }
+}
+
 interface GameContextType {
   state: GameState;
   dispatch: React.Dispatch<GameAction>;

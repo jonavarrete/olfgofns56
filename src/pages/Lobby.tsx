@@ -6,6 +6,7 @@ import Button from '../components/UI/Button';
 import Card from '../components/UI/Card';
 import AccountSettings from '../components/Lobby/AccountSettings';
 import GlobalStats from '../components/Lobby/GlobalStats';
+import UniverseNewsFeed from '../components/Lobby/UniverseNewsFeed';
 import { 
   Globe, 
   Users, 
@@ -26,7 +27,8 @@ import {
   AlertTriangle,
   CheckCircle,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  Radio
 } from 'lucide-react';
 import { Universe } from '../types/auth';
 
@@ -550,6 +552,18 @@ export default function Lobby() {
                       </div>
                     </div>
                   </Card>
+
+                  {/* Universe News Feed */}
+                  <div>
+                    <h4 className="text-sm font-rajdhani font-semibold text-white mb-3 flex items-center">
+                      <Radio className="w-4 h-4 mr-2 text-neon-red animate-pulse" />
+                      Galactic News Network
+                    </h4>
+                    <UniverseNewsFeed 
+                      universeId={selectedUniverse.id} 
+                      universeName={selectedUniverse.name} 
+                    />
+                  </div>
 
                   {/* Quick Stats */}
                   <Card title="Estadísticas Rápidas">

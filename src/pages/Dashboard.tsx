@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { useGNN } from '../hooks/useGNN';
 import Card from '../components/UI/Card';
 import GNNNewsItem from '../components/GNN/GNNNewsItem';
+import GNNPanel from '../components/GNN/GNNPanel';
 import { 
   TrendingUp, 
   Activity, 
@@ -28,6 +29,15 @@ export default function Dashboard() {
   // Get current universe and GNN data
   const currentUniverse = localStorage.getItem('selected_universe') || 'universe_1';
   const { state: gnnState, getBreakingNewsItems, markAsRead } = useGNN(currentUniverse, player.id);
+  
+  const [showGNNPanel, setShowGNNPanel] = useState(false);
+  
+  // Listen for GNN button clicks from header
+  useEffect(() => {
+    const handleOpenGNN = () => setShowGNNPanel(true);
+    window.addEventListener('openGNN', handleOpenGNN);
+    return () => window.removeEventListener('openGNN', handleOpenGNN);
+  }, []);
   
   const breakingNews = getBreakingNewsItems();
   const recentNews = gnnState.news.slice(0, 3);
@@ -484,7 +494,10 @@ export default function Dashboard() {
                   return (
                     <div
                       key={news.id}
-                      onClick={() => markAsRead(news.id)}
+                      onClick={() => {
+                        markAsRead(news.id);
+                        setShowGNNPanel(true);
+                      }}
                       className="p-3 bg-space-700/30 rounded border border-space-600 hover:border-neon-blue/30 cursor-pointer transition-all duration-200 group"
                     >
                       <div className="flex items-start space-x-2">
@@ -563,6 +576,18 @@ export default function Dashboard() {
           ))}
         </div>
       </Card>
+      
+      {/* GNN Panel Modal */}
+      {showGNNPanel && (
+        <GNNPanel
+          onClose={() => setShowGNNPanel(false)}
+          onNavigate={(type, data) => {
+            // Handle navigation based on news type
+            console.log('Navigate to:', type, data);
+            setShowGNNPanel(false);
+          }}
+        />
+      )}
     </div>
   );
 }

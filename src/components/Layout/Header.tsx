@@ -1,14 +1,23 @@
 import React from 'react';
 import { useGame } from '../../context/GameContext';
+import { useGNN } from '../../hooks/useGNN';
 import { User, LogOut, Globe } from 'lucide-react';
 import { Gem } from 'lucide-react';
 import ResourceDisplay from '../UI/ResourceDisplay';
 import PlanetSelector from '../UI/PlanetSelector';
 import NotificationCenter from '../UI/NotificationCenter';
+import GNNButton from '../GNN/GNNButton';
 
 export default function Header() {
   const { state } = useGame();
   const { player, selectedPlanet } = state;
+  
+  // Get current universe and GNN data
+  const currentUniverse = localStorage.getItem('selected_universe') || 'universe_1';
+  const { state: gnnState, getBreakingNewsItems } = useGNN(currentUniverse, player.id);
+  
+  const breakingNews = getBreakingNewsItems();
+  const hasBreakingNews = breakingNews.length > 0;
 
   return (
     <header className="relative bg-card-gradient border-b border-space-600 px-6 py-4 z-20">
@@ -28,6 +37,16 @@ export default function Header() {
 
         <div className="flex items-center space-x-4">
           <NotificationCenter />
+          
+          <GNNButton 
+            unreadCount={gnnState.unreadCount}
+            hasBreakingNews={hasBreakingNews}
+            onClick={() => {
+              // This will be handled by the Dashboard component
+              const event = new CustomEvent('openGNN');
+              window.dispatchEvent(event);
+            }}
+          />
 
           <div className="relative flex items-center space-x-3 px-3 py-2 bg-space-700/50 rounded-lg">
             <div className="w-8 h-8 bg-neon-purple/20 rounded-full flex items-center justify-center">

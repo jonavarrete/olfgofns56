@@ -11,6 +11,7 @@ import {
   mockMessages,
   mockDiplomaticPacts
 } from '../data/mockData';
+import { mockGNNNews } from '../data/gnnData';
 
 // Add trade property to GameState interface
 declare module '../types/game' {
@@ -163,7 +164,7 @@ const initialState: GameState = {
       successRate: 95.7,
     },
   },
-  gnn: mockGNNState,
+  gnn: mockGNNNews,
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {

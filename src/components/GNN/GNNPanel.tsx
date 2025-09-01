@@ -27,18 +27,19 @@ import { GNNNewsItem as NewsItemType } from '../../types/gnn';
 
 interface GNNPanelProps {
   onClose: () => void;
-  onNavigate: (type: 'combat' | 'alien_race' | 'mission' | 'alliance' | 'player', data: any) => void;
+  onNavigate?: (type: 'combat' | 'alien_race' | 'mission' | 'alliance' | 'player', data: any) => void;
 }
 
 type CategoryFilter = 'all' | 'combat' | 'diplomacy' | 'exploration' | 'rankings' | 'events';
 
-export default function GNNPanel({ onClose, onNavigate }: GNNPanelProps) {
+export default function GNNPanel({ onClose, onNavigate = () => {} }: GNNPanelProps) {
   const { state: gameState } = useGame();
   const { player } = gameState;
   
   // Get current universe from localStorage
   const currentUniverse = localStorage.getItem('selected_universe') || 'universe_1';
-  const { state, markAsRead, markAllAsRead, updateSettings, getNewsByCategory, refreshNews } = useGNN(currentUniverse, player.id);
+  const { state, markAsRead, markAllAsRead, updateSettings, getNewsByCategory, refreshNews, getBreakingNewsItems } = useGNN(currentUniverse, player.id);
+
   
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>('all');
   const [showSettings, setShowSettings] = useState(false);
@@ -249,7 +250,7 @@ export default function GNNPanel({ onClose, onNavigate }: GNNPanelProps) {
                 Última Hora
               </h3>
               <div className="space-y-2">
-                {getBreakingNews(currentUniverse).slice(0, 3).map((news) => (
+                {getBreakingNewsItems(currentUniverse).slice(0, 3).map((news) => (
                   <div
                     key={news.id}
                     onClick={() => handleNewsClick(news)}

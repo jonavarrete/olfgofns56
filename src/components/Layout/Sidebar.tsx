@@ -15,11 +15,13 @@ import {
   Calculator,
   Target,
   Store,
-  Crown
+  Crown,
+  BarChart3
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Imperio', href: '/', icon: Home },
+  { name: 'Vista Imperio', href: '/empire', icon: BarChart3 },
   { name: 'Edificios', href: '/buildings', icon: Building },
   { name: 'Investigación', href: '/research', icon: FlaskConical },
   { name: 'Astillero', href: '/shipyard', icon: Rocket },

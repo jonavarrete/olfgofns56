@@ -5,6 +5,7 @@ import Sidebar from './components/Layout/Sidebar';
 import Header from './components/Layout/Header';
 import SpaceBackground from './components/UI/SpaceBackground';
 import Dashboard from './pages/Dashboard';
+import Empire from './pages/Empire';
 import Buildings from './pages/Buildings';
 import Research from './pages/Research';
 import Shipyard from './pages/Shipyard';
@@ -34,6 +35,7 @@ function App() {
               <main className="p-6 relative">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
+                  <Route path="/empire" element={<Empire />} />
                   <Route path="/buildings" element={<Buildings />} />
                   <Route path="/research" element={<Research />} />
                   <Route path="/shipyard" element={<Shipyard />} />

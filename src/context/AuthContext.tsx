@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 800));
       
       // Mock authentication - in real app, this would be an API call
       // Accept demo credentials or any valid email/password combination for testing
@@ -96,7 +96,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           id: '1',
           email,
           username: email === 'demo@galaxy.com' ? 'SpaceCommander' : email.split('@')[0],
-          avatar: 'https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg',
           createdAt: Date.now() - 86400000 * 30,
           lastLogin: Date.now(),
           preferences: {
@@ -109,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('galactic_empire_user', JSON.stringify(user));
         dispatch({ type: 'LOGIN_SUCCESS', payload: user });
       } else {
-        throw new Error('Credenciales inválidas. Usa demo@galaxy.com / demo123 o cualquier email válido con contraseña de 6+ caracteres.');
+        throw new Error('Credenciales inválidas');
       }
     } catch (error) {
       dispatch({ type: 'LOGIN_ERROR', payload: (error as Error).message });

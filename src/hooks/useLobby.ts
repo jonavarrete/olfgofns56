@@ -193,8 +193,8 @@ export function useLobby() {
     // For now, we'll just simulate the process
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // The main App component will detect this and redirect to the game
-    window.location.reload();
+    // Navigate to dashboard
+    window.location.href = '/';
   };
 
   const refreshUniverses = () => {

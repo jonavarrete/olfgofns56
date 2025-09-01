@@ -166,6 +166,7 @@ export const mockPlayer: Player = {
   research: mockResearch,
   fleet: mockFleet,
   officers: mockOfficerState,
+  officers: mockOfficerState,
 };
 
 export const mockMissions: Mission[] = [

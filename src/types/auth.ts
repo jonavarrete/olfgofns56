@@ -2,7 +2,6 @@ export interface User {
   id: string;
   email: string;
   username: string;
-  avatar?: string;
   createdAt: number;
   lastLogin: number;
   preferences: {

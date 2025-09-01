@@ -39,7 +39,12 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
 // Game wrapper component that checks for universe selection
 function GameWrapper() {
+  const { user } = useAuth();
   const selectedUniverse = localStorage.getItem('selected_universe');
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
   
   if (!selectedUniverse) {
     return <Navigate to="/lobby" replace />;

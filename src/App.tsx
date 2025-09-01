@@ -27,7 +27,7 @@ import TechnologyTree from './pages/TechnologyTree';
 import ResourceCalculator from './pages/ResourceCalculator';
 
 // Componente para proteger rutas que requieren autenticación
-function AuthGuard({ children }) {
+function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   
   if (!user) {

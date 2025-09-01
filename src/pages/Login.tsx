@@ -49,7 +49,10 @@ export default function Login() {
       username: '',
       confirmPassword: ''
     });
-    login('demo@galaxy.com', 'demo123');
+    // Clear any existing errors first
+    setTimeout(() => {
+      login('demo@galaxy.com', 'demo123');
+    }, 100);
   };
 
   return (

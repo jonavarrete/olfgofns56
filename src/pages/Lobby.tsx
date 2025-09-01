@@ -159,38 +159,123 @@ export default function Lobby() {
                   <p className="text-xs text-gray-400">{authState.user?.email}</p>
                 </div>
               </button>
-
+              
               {showUserMenu && (
-                <>
+                <div>
                   <div
                     className="fixed inset-0 z-10"
                     onClick={() => setShowUserMenu(false)}
                   />
-                  <div className="absolute top-full right-0 mt-2 w-48 bg-card-gradient border border-space-600 rounded-lg shadow-xl z-20">
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-card-gradient border border-space-600 rounded-lg shadow-xl z-[100] backdrop-blur-sm">
                     <div className="p-2">
-                      <button
-                        onClick={() => {
-                          setShowUserMenu(false);
-                          // Open settings modal
-                        }}
-                        className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-space-600/50 rounded transition-colors"
-                      >
-                        <Settings className="w-4 h-4" />
-                        <span>Configuración</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowUserMenu(false);
-                          logout();
-                        }}
-                        className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:text-neon-red hover:bg-neon-red/10 rounded transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Cerrar Sesión</span>
-                      </button>
+                      <div className="px-3 py-2 border-b border-space-600 mb-2">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-neon-purple/20 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-neon-purple" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-rajdhani font-medium text-white">
+                              {authState.user?.username}
+                            </p>
+                            <p className="text-xs text-gray-400">{authState.user?.email}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <div className="px-3 py-2">
+                          <div className="grid grid-cols-2 gap-3 text-xs">
+                            <div className="text-center p-2 bg-space-700/30 rounded">
+                              <p className="text-gray-400">Cuenta creada</p>
+                              <p className="text-white font-rajdhani font-medium">
+                                {new Date(authState.user?.createdAt || 0).toLocaleDateString('es-ES', { 
+                                  month: 'short', 
+                                  year: 'numeric' 
+                                })}
+                              </p>
+                            </div>
+                            <div className="text-center p-2 bg-space-700/30 rounded">
+                              <p className="text-gray-400">Última conexión</p>
+                              <p className="text-white font-rajdhani font-medium">
+                                {new Date(authState.user?.lastLogin || 0).toLocaleDateString('es-ES', { 
+                                  month: 'short', 
+                                  day: 'numeric' 
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="border-t border-space-600 pt-2">
+                          <div className="px-3 py-1">
+                            <p className="text-xs text-gray-400 mb-2">Preferencias</p>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-gray-300">Idioma:</span>
+                                <span className="text-xs text-neon-blue font-rajdhani font-medium">
+                                  {authState.user?.preferences.language === 'es' ? 'Español' : 
+                                   authState.user?.preferences.language === 'en' ? 'English' :
+                                   authState.user?.preferences.language === 'fr' ? 'Français' : 'Deutsch'}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-gray-300">Tema:</span>
+                                <span className="text-xs text-neon-blue font-rajdhani font-medium capitalize">
+                                  {authState.user?.preferences.theme}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-gray-300">Notificaciones:</span>
+                                <span className={`text-xs font-rajdhani font-medium ${
+                                  authState.user?.preferences.notifications ? 'text-neon-green' : 'text-neon-red'
+                                }`}>
+                                  {authState.user?.preferences.notifications ? 'Activadas' : 'Desactivadas'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="border-t border-space-600 pt-2">
+                        <button
+                          onClick={() => {
+                            setShowUserMenu(false);
+                            // TODO: Implementar modal de configuración
+                          }}
+                          className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-space-600/50 rounded transition-colors"
+                        >
+                          <Settings className="w-4 h-4" />
+                          <span>Configuración de Cuenta</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => {
+                            setShowUserMenu(false);
+                            // TODO: Implementar modal de estadísticas
+                          }}
+                          className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-space-600/50 rounded transition-colors"
+                        >
+                          <TrendingUp className="w-4 h-4" />
+                          <span>Estadísticas Globales</span>
+                        </button>
+                      </div> {/* ← Este cierra el div de los botones de configuración */}
+                      
+                      <div className="border-t border-space-600 mt-2 pt-2">
+                        <button
+                          onClick={() => {
+                            setShowUserMenu(false);
+                            logout();
+                          }}
+                          className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:text-neon-red hover:bg-neon-red/10 rounded transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Cerrar Sesión</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -198,7 +283,7 @@ export default function Lobby() {
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 p-6">
+      <main className="relative z-0 p-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <h2 className="text-3xl font-orbitron font-bold text-white mb-2">
@@ -313,7 +398,7 @@ export default function Lobby() {
             {/* Universe Details */}
             <div className="space-y-6">
               {selectedUniverse ? (
-                <>
+                <div>
                   <Card title="Detalles del Universo" glowing>
                     <div className="space-y-4">
                       <div>
@@ -494,7 +579,7 @@ export default function Lobby() {
                       </div>
                     </div>
                   </Card>
-                </>
+                </div>
               ) : (
                 <Card title="Selecciona un Universo">
                   <div className="text-center py-12">

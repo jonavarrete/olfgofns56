@@ -114,6 +114,8 @@ export default function TechnologyTreeView() {
   };
 
   const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num.toLocaleString();
   };
 
@@ -200,16 +202,29 @@ export default function TechnologyTreeView() {
                     : player.research[req.key as keyof typeof player.research] || 0;
                   
                   const isMet = currentLevel >= req.level;
+                  const requiredTech = TechnologyTreeUtils.getTechnologyById(req.key);
 
                   return (
-                    <div key={index} className={`flex items-center justify-between text-xs ${
-                      isMet ? 'text-neon-green' : 'text-neon-red'
-                    }`}>
-                      <span>{TechnologyTreeUtils.getRequirementText(req)}</span>
-                      <span className="font-rajdhani font-medium">
+                    <button
+                      key={index}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (requiredTech) {
+                          setSelectedTechnology(requiredTech);
+                        }
+                      }}
+                      className={`w-full flex items-center justify-between text-xs p-2 rounded border transition-all duration-200 hover:scale-105 ${
+                        isMet 
+                          ? 'bg-neon-green/10 border-neon-green/30 text-neon-green hover:bg-neon-green/20' 
+                          : 'bg-neon-red/10 border-neon-red/30 text-neon-red hover:bg-neon-red/20'
+                      }`}
+                    >
+                      <span className="truncate">{TechnologyTreeUtils.getRequirementText(req)}</span>
+                      <div className="flex items-center space-x-1 ml-2">
+                        <span className="font-rajdhani font-medium">{currentLevel}/{req.level}</span>
                         {isMet ? <CheckCircle className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-                      </span>
-                    </div>
+                      </div>
+                    </button>
                   );
                 })}
               </div>
@@ -355,7 +370,7 @@ export default function TechnologyTreeView() {
                   <h4 className="text-sm font-rajdhani font-semibold text-white">
                     Costo {selectedTechnology.category === 'building' || selectedTechnology.category === 'research' ? `(Nivel ${status.currentLevel + 1})` : ''}:
                   </h4>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
                     {status.cost.metal > 0 && (
                       <div className="flex items-center justify-between">
                         <span className="text-gray-400">Metal:</span>
@@ -396,7 +411,7 @@ export default function TechnologyTreeView() {
                         </span>
                       </div>
                     )}
-                    <div className="flex items-center justify-between col-span-2">
+                    <div className="flex items-center justify-between">
                       <span className="text-gray-400">Tiempo:</span>
                       <span className="text-gray-300 font-rajdhani font-medium">
                         {formatTime(status.cost.time)}
@@ -419,17 +434,28 @@ export default function TechnologyTreeView() {
                         : player.research[req.key as keyof typeof player.research] || 0;
                       
                       const isMet = currentLevel >= req.level;
+                      const requiredTech = TechnologyTreeUtils.getTechnologyById(req.key);
 
                       return (
-                        <div key={index} className={`flex items-center justify-between text-xs p-2 rounded border ${
-                          isMet ? 'bg-neon-green/10 border-neon-green/30 text-neon-green' : 'bg-neon-red/10 border-neon-red/30 text-neon-red'
-                        }`}>
-                          <span>{TechnologyTreeUtils.getRequirementText(req)}</span>
-                          <div className="flex items-center space-x-1">
+                        <button
+                          key={index}
+                          onClick={() => {
+                            if (requiredTech) {
+                              setSelectedTechnology(requiredTech);
+                            }
+                          }}
+                          className={`w-full flex items-center justify-between text-xs p-3 rounded-lg border transition-all duration-200 hover:scale-105 ${
+                            isMet 
+                              ? 'bg-neon-green/10 border-neon-green/30 text-neon-green hover:bg-neon-green/20' 
+                              : 'bg-neon-red/10 border-neon-red/30 text-neon-red hover:bg-neon-red/20'
+                          }`}
+                        >
+                          <span className="truncate">{TechnologyTreeUtils.getRequirementText(req)}</span>
+                          <div className="flex items-center space-x-2 ml-3">
                             <span className="font-rajdhani font-medium">{currentLevel}/{req.level}</span>
-                            {isMet ? <CheckCircle className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                            {isMet ? <CheckCircle className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                           </div>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -478,15 +504,18 @@ export default function TechnologyTreeView() {
 
                   return (
                     <React.Fragment key={tech.id}>
-                      <div className={`px-3 py-1 rounded text-xs font-rajdhani font-medium border ${
-                        isCompleted 
-                          ? 'bg-neon-green/20 border-neon-green/30 text-neon-green'
-                          : techStatus.canBuild
-                          ? 'bg-neon-blue/20 border-neon-blue/30 text-neon-blue'
-                          : 'bg-neon-red/20 border-neon-red/30 text-neon-red'
-                      }`}>
+                      <button
+                        onClick={() => setSelectedTechnology(tech)}
+                        className={`px-3 py-1 rounded text-xs font-rajdhani font-medium border transition-all duration-200 hover:scale-105 ${
+                          isCompleted 
+                            ? 'bg-neon-green/20 border-neon-green/30 text-neon-green hover:bg-neon-green/30'
+                            : techStatus.canBuild
+                            ? 'bg-neon-blue/20 border-neon-blue/30 text-neon-blue hover:bg-neon-blue/30'
+                            : 'bg-neon-red/20 border-neon-red/30 text-neon-red hover:bg-neon-red/30'
+                        }`}
+                      >
                         {tech.name}
-                      </div>
+                      </button>
                       {index < path.length - 1 && (
                         <ArrowRight className="w-3 h-3 text-gray-400" />
                       )}

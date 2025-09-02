@@ -25,6 +25,14 @@ import Trade from './pages/Trade';
 import Officers from './pages/Officers';
 import TechnologyTree from './pages/TechnologyTree';
 import ResourceCalculator from './pages/ResourceCalculator';
+import AdminLogin from './admin/pages/AdminLogin';
+import AdminDashboard from './admin/pages/AdminDashboard';
+import UserManagement from './admin/pages/UserManagement';
+import ContentManagement from './admin/pages/ContentManagement';
+import SecurityManagement from './admin/pages/SecurityManagement';
+import CommunicationCenter from './admin/pages/CommunicationCenter';
+import AdminLayout from './admin/layout/AdminLayout';
+import { AdminProvider } from './admin/context/AdminContext';
 import { Rocket} from 'lucide-react';
 
 // Componente para proteger rutas que requieren autenticación
@@ -109,19 +117,41 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/lobby" element={
-            <AuthGuard>
-              <Lobby />
-            </AuthGuard>
-          } />
-          <Route path="/*" element={
-            <AuthGuard>
-              <GameWrapper />
-            </AuthGuard>
-          } />
-        </Routes>
+        <AdminProvider>
+          <Routes>
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/*" element={
+              <AdminLayout>
+                <Routes>
+                  <Route path="dashboard" element={<AdminDashboard />} />
+                  <Route path="users" element={<UserManagement />} />
+                  <Route path="users/*" element={<UserManagement />} />
+                  <Route path="content" element={<ContentManagement />} />
+                  <Route path="content/*" element={<ContentManagement />} />
+                  <Route path="security" element={<SecurityManagement />} />
+                  <Route path="security/*" element={<SecurityManagement />} />
+                  <Route path="communication" element={<CommunicationCenter />} />
+                  <Route path="communication/*" element={<CommunicationCenter />} />
+                  <Route path="config/*" element={<div>Configuración - En desarrollo</div>} />
+                </Routes>
+              </AdminLayout>
+            } />
+            
+            {/* Game Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/lobby" element={
+              <AuthGuard>
+                <Lobby />
+              </AuthGuard>
+            } />
+            <Route path="/*" element={
+              <AuthGuard>
+                <GameWrapper />
+              </AuthGuard>
+            } />
+          </Routes>
+        </AdminProvider>
       </AuthProvider>
     </Router>
   );

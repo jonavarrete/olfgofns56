@@ -57,10 +57,12 @@ export default function TechnologyTreeView() {
 
   const handleCloseDrawer = () => {
     setShowDetailsDrawer(false);
+    // No limpiar selectedTechnology para mantener la selección en desktop
   };
 
   const handleSelectTechnologyInDrawer = (tech: TechnologyNode) => {
     setSelectedTechnology(tech);
+    // Mantener el drawer abierto en móvil
   };
 
   const getAllTechnologies = () => {
@@ -171,7 +173,7 @@ export default function TechnologyTreeView() {
     return (
       <Card 
         key={tech.id}
-        className={`cursor-pointer transition-all duration-300 hover:scale-105 ${
+        className={`cursor-pointer transition-all duration-300 hover:scale-105 touch-manipulation ${
           selectedTechnology?.id === tech.id ? 'border-neon-blue/50 shadow-[0_0_20px_rgba(0,212,255,0.3)]' : ''
         }`}
         onClick={() => handleSelectTechnology(tech)}
@@ -179,14 +181,14 @@ export default function TechnologyTreeView() {
         <div className="space-y-3">
           <div className="flex items-start justify-between">
             <div className="flex items-start space-x-3">
-              <div className={`p-2 rounded-lg ${colorClass.bg} ${colorClass.border}`}>
+              <div className={`p-2 rounded-lg ${colorClass.bg} border ${colorClass.border}`}>
                 <Icon className={`w-5 h-5 ${colorClass.text}`} />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <h3 className="font-rajdhani font-semibold text-white text-sm">
                   {tech.name}
                 </h3>
-                <p className="text-xs text-gray-400 mt-1">{tech.description}</p>
+                <p className="text-xs text-gray-400 mt-1 line-clamp-2">{tech.description}</p>
                 {(tech.category === 'building' || tech.category === 'research') && (
                   <p className="text-xs text-gray-500 mt-1">
                     Nivel actual: {status.currentLevel}
@@ -196,7 +198,7 @@ export default function TechnologyTreeView() {
               </div>
             </div>
 
-            <div className="flex flex-col items-end space-y-1">
+            <div className="flex flex-col items-end space-y-1 flex-shrink-0">
               {status.isMaxLevel ? (
                 <div className="px-2 py-1 bg-neon-green/20 text-neon-green rounded text-xs font-rajdhani font-medium">
                   MÁXIMO
@@ -217,32 +219,25 @@ export default function TechnologyTreeView() {
             </div>
           </div>
 
-          {/* Requirements */}
+          {/* Quick Requirements Preview */}
           {tech.requirements.length > 0 && (
             <div className="space-y-1">
               <h4 className="text-xs font-rajdhani font-medium text-gray-400">Requisitos:</h4>
               <div className="space-y-1">
-                {tech.requirements.map((req, index) => {
+                {tech.requirements.slice(0, 2).map((req, index) => {
                   const currentLevel = req.type === 'building' 
                     ? selectedPlanet.buildings[req.key as keyof typeof selectedPlanet.buildings] || 0
                     : player.research[req.key as keyof typeof player.research] || 0;
                   
                   const isMet = currentLevel >= req.level;
-                  const requiredTech = TechnologyTreeUtils.getTechnologyById(req.key);
 
                   return (
-                    <button
+                    <div
                       key={index}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (requiredTech) {
-                          handleSelectTechnology(requiredTech);
-                        }
-                      }}
-                      className={`w-full flex items-center justify-between text-xs p-2 rounded border transition-all duration-200 hover:scale-105 ${
+                      className={`flex items-center justify-between text-xs p-2 rounded border ${
                         isMet 
-                          ? 'bg-neon-green/10 border-neon-green/30 text-neon-green hover:bg-neon-green/20' 
-                          : 'bg-neon-red/10 border-neon-red/30 text-neon-red hover:bg-neon-red/20'
+                          ? 'bg-neon-green/10 border-neon-green/30 text-neon-green' 
+                          : 'bg-neon-red/10 border-neon-red/30 text-neon-red'
                       }`}
                     >
                       <span className="truncate">{TechnologyTreeUtils.getRequirementText(req)}</span>
@@ -250,14 +245,19 @@ export default function TechnologyTreeView() {
                         <span className="font-rajdhani font-medium">{currentLevel}/{req.level}</span>
                         {isMet ? <CheckCircle className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
+                {tech.requirements.length > 2 && (
+                  <p className="text-xs text-gray-500 text-center">
+                    +{tech.requirements.length - 2} requisitos más
+                  </p>
+                )}
               </div>
             </div>
           )}
 
-          {/* Cost */}
+          {/* Quick Cost Preview */}
           {!status.isMaxLevel && (
             <div className="space-y-1">
               <h4 className="text-xs font-rajdhani font-medium text-gray-400">
@@ -336,25 +336,25 @@ export default function TechnologyTreeView() {
     const colorClass = getCategoryColorClass(selectedTechnology.category);
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 lg:space-y-6">
         {/* Technology Header */}
-        <div className="flex items-start space-x-4">
-          <div className={`p-4 rounded-lg ${colorClass.bg} ${colorClass.border}`}>
-            <Icon className={`w-8 h-8 ${colorClass.text}`} />
+        <div className="flex items-start space-x-3 lg:space-x-4">
+          <div className={`p-3 lg:p-4 rounded-lg ${colorClass.bg} border ${colorClass.border}`}>
+            <Icon className={`w-6 h-6 lg:w-8 lg:h-8 ${colorClass.text}`} />
           </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-orbitron font-bold text-white">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg lg:text-2xl font-orbitron font-bold text-white">
               {selectedTechnology.name}
             </h2>
-            <p className="text-gray-400 mt-1">{selectedTechnology.description}</p>
-            <div className="flex items-center space-x-4 mt-2">
-              <span className={`px-3 py-1 rounded text-sm font-rajdhani font-medium ${colorClass.bg} ${colorClass.text}`}>
+            <p className="text-gray-400 mt-1 text-sm lg:text-base">{selectedTechnology.description}</p>
+            <div className="flex items-center space-x-2 lg:space-x-4 mt-2 flex-wrap">
+              <span className={`px-2 lg:px-3 py-1 rounded text-xs lg:text-sm font-rajdhani font-medium ${colorClass.bg} ${colorClass.text} border ${colorClass.border}`}>
                 {selectedTechnology.category === 'building' ? 'Edificio' :
                  selectedTechnology.category === 'research' ? 'Investigación' :
                  selectedTechnology.category === 'ship' ? 'Nave' : 'Defensa'}
               </span>
               {(selectedTechnology.category === 'building' || selectedTechnology.category === 'research') && (
-                <span className="text-sm text-gray-400">
+                <span className="text-xs lg:text-sm text-gray-400">
                   Nivel actual: {status.currentLevel}
                   {selectedTechnology.maxLevel && ` / ${selectedTechnology.maxLevel}`}
                 </span>
@@ -365,152 +365,147 @@ export default function TechnologyTreeView() {
 
         {/* Current Status */}
         <Card title="Estado Actual" glowing={status.canBuild}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                {status.isMaxLevel ? (
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              {status.isMaxLevel ? (
+                <>
+                  <CheckCircle className="w-5 h-5 text-neon-green" />
+                  <span className="text-neon-green font-rajdhani font-medium">Nivel Máximo Alcanzado</span>
+                </>
+              ) : status.canBuild ? (
+                <>
+                  <CheckCircle className="w-5 h-5 text-neon-green" />
+                  <span className="text-neon-green font-rajdhani font-medium">Disponible para Construir</span>
+                </>
+              ) : status.meetsRequirements ? (
+                <>
+                  <AlertTriangle className="w-5 h-5 text-neon-orange" />
+                  <span className="text-neon-orange font-rajdhani font-medium">Recursos Insuficientes</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-5 h-5 text-neon-red" />
+                  <span className="text-neon-red font-rajdhani font-medium">Requisitos No Cumplidos</span>
+                </>
+              )}
+            </div>
+
+            {!status.isMaxLevel && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-rajdhani font-semibold text-white">
+                  Costo {selectedTechnology.category === 'building' || selectedTechnology.category === 'research' ? `(Nivel ${status.currentLevel + 1})` : ''}:
+                </h4>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                  {status.cost.metal > 0 && (
+                    <div className="flex items-center justify-between p-2 bg-space-700/30 rounded">
+                      <span className="text-gray-400">Metal:</span>
+                      <span className={`font-rajdhani font-medium ${
+                        selectedPlanet.resources.metal >= status.cost.metal ? 'text-gray-300' : 'text-neon-red'
+                      }`}>
+                        {formatNumber(status.cost.metal)}
+                      </span>
+                    </div>
+                  )}
+                  {status.cost.crystal > 0 && (
+                    <div className="flex items-center justify-between p-2 bg-space-700/30 rounded">
+                      <span className="text-gray-400">Cristal:</span>
+                      <span className={`font-rajdhani font-medium ${
+                        selectedPlanet.resources.crystal >= status.cost.crystal ? 'text-neon-blue' : 'text-neon-red'
+                      }`}>
+                        {formatNumber(status.cost.crystal)}
+                      </span>
+                    </div>
+                  )}
+                  {status.cost.deuterium > 0 && (
+                    <div className="flex items-center justify-between p-2 bg-space-700/30 rounded">
+                      <span className="text-gray-400">Deuterio:</span>
+                      <span className={`font-rajdhani font-medium ${
+                        selectedPlanet.resources.deuterium >= status.cost.deuterium ? 'text-neon-green' : 'text-neon-red'
+                      }`}>
+                        {formatNumber(status.cost.deuterium)}
+                      </span>
+                    </div>
+                  )}
+                  {status.cost.energy > 0 && (
+                    <div className="flex items-center justify-between p-2 bg-space-700/30 rounded">
+                      <span className="text-gray-400">Energía:</span>
+                      <span className={`font-rajdhani font-medium ${
+                        selectedPlanet.resources.energy >= status.cost.energy ? 'text-neon-orange' : 'text-neon-red'
+                      }`}>
+                        {formatNumber(status.cost.energy)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between p-2 bg-space-700/30 rounded col-span-1 lg:col-span-2">
+                    <span className="text-gray-400">Tiempo:</span>
+                    <span className="text-gray-300 font-rajdhani font-medium">
+                      {formatTime(status.cost.time)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action Button */}
+            {!status.isMaxLevel && (
+              <Button
+                variant={status.canBuild ? "primary" : "secondary"}
+                disabled={!status.canBuild}
+                className="w-full"
+              >
+                {selectedTechnology.category === 'building' || selectedTechnology.category === 'research' ? (
                   <>
-                    <CheckCircle className="w-5 h-5 text-neon-green" />
-                    <span className="text-neon-green font-rajdhani font-medium">Nivel Máximo Alcanzado</span>
-                  </>
-                ) : status.canBuild ? (
-                  <>
-                    <CheckCircle className="w-5 h-5 text-neon-green" />
-                    <span className="text-neon-green font-rajdhani font-medium">Disponible para Construir</span>
-                  </>
-                ) : status.meetsRequirements ? (
-                  <>
-                    <AlertTriangle className="w-5 h-5 text-neon-orange" />
-                    <span className="text-neon-orange font-rajdhani font-medium">Recursos Insuficientes</span>
+                    <Building className="w-4 h-4 mr-2" />
+                    {selectedTechnology.category === 'building' ? 'Construir' : 'Investigar'} Nivel {status.currentLevel + 1}
                   </>
                 ) : (
                   <>
-                    <Lock className="w-5 h-5 text-neon-red" />
-                    <span className="text-neon-red font-rajdhani font-medium">Requisitos No Cumplidos</span>
+                    <Rocket className="w-4 h-4 mr-2" />
+                    Ir a {selectedTechnology.category === 'ship' ? 'Astillero' : 'Defensas'}
                   </>
                 )}
-              </div>
-
-              {!status.isMaxLevel && (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-rajdhani font-semibold text-white">
-                    Costo {selectedTechnology.category === 'building' || selectedTechnology.category === 'research' ? `(Nivel ${status.currentLevel + 1})` : ''}:
-                  </h4>
-                  <div className="space-y-2">
-                    {status.cost.metal > 0 && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400">Metal:</span>
-                        <span className={`font-rajdhani font-medium ${
-                          selectedPlanet.resources.metal >= status.cost.metal ? 'text-gray-300' : 'text-neon-red'
-                        }`}>
-                          {formatNumber(status.cost.metal)}
-                        </span>
-                      </div>
-                    )}
-                    {status.cost.crystal > 0 && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400">Cristal:</span>
-                        <span className={`font-rajdhani font-medium ${
-                          selectedPlanet.resources.crystal >= status.cost.crystal ? 'text-neon-blue' : 'text-neon-red'
-                        }`}>
-                          {formatNumber(status.cost.crystal)}
-                        </span>
-                      </div>
-                    )}
-                    {status.cost.deuterium > 0 && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400">Deuterio:</span>
-                        <span className={`font-rajdhani font-medium ${
-                          selectedPlanet.resources.deuterium >= status.cost.deuterium ? 'text-neon-green' : 'text-neon-red'
-                        }`}>
-                          {formatNumber(status.cost.deuterium)}
-                        </span>
-                      </div>
-                    )}
-                    {status.cost.energy > 0 && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-400">Energía:</span>
-                        <span className={`font-rajdhani font-medium ${
-                          selectedPlanet.resources.energy >= status.cost.energy ? 'text-neon-orange' : 'text-neon-red'
-                        }`}>
-                          {formatNumber(status.cost.energy)}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-400">Tiempo:</span>
-                      <span className="text-gray-300 font-rajdhani font-medium">
-                        {formatTime(status.cost.time)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              {/* Requirements */}
-              {selectedTechnology.requirements.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-rajdhani font-semibold text-white mb-2">Requisitos:</h4>
-                  <div className="space-y-1">
-                    {selectedTechnology.requirements.map((req, index) => {
-                      const currentLevel = req.type === 'building' 
-                        ? selectedPlanet.buildings[req.key as keyof typeof selectedPlanet.buildings] || 0
-                        : player.research[req.key as keyof typeof player.research] || 0;
-                      
-                      const isMet = currentLevel >= req.level;
-                      const requiredTech = TechnologyTreeUtils.getTechnologyById(req.key);
-
-                      return (
-                        <button
-                          key={index}
-                          onClick={() => {
-                            if (requiredTech) {
-                              handleSelectTechnologyInDrawer(requiredTech);
-                            }
-                          }}
-                          className={`w-full flex items-center justify-between text-xs p-3 rounded-lg border transition-all duration-200 hover:scale-105 ${
-                            isMet 
-                              ? 'bg-neon-green/10 border-neon-green/30 text-neon-green hover:bg-neon-green/20' 
-                              : 'bg-neon-red/10 border-neon-red/30 text-neon-red hover:bg-neon-red/20'
-                          }`}
-                        >
-                          <span className="truncate">{TechnologyTreeUtils.getRequirementText(req)}</span>
-                          <div className="flex items-center space-x-2 ml-3">
-                            <span className="font-rajdhani font-medium">{currentLevel}/{req.level}</span>
-                            {isMet ? <CheckCircle className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Action Button */}
-              {!status.isMaxLevel && (
-                <Button
-                  variant={status.canBuild ? "primary" : "secondary"}
-                  disabled={!status.canBuild}
-                  className="w-full"
-                >
-                  {selectedTechnology.category === 'building' || selectedTechnology.category === 'research' ? (
-                    <>
-                      <Building className="w-4 h-4 mr-2" />
-                      {selectedTechnology.category === 'building' ? 'Construir' : 'Investigar'} Nivel {status.currentLevel + 1}
-                    </>
-                  ) : (
-                    <>
-                      <Rocket className="w-4 h-4 mr-2" />
-                      Ir a {selectedTechnology.category === 'ship' ? 'Astillero' : 'Defensas'}
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
+              </Button>
+            )}
           </div>
         </Card>
+
+        {/* Requirements */}
+        {selectedTechnology.requirements.length > 0 && (
+          <Card title="Requisitos Completos">
+            <div className="space-y-2">
+              {selectedTechnology.requirements.map((req, index) => {
+                const currentLevel = req.type === 'building' 
+                  ? selectedPlanet.buildings[req.key as keyof typeof selectedPlanet.buildings] || 0
+                  : player.research[req.key as keyof typeof player.research] || 0;
+                
+                const isMet = currentLevel >= req.level;
+                const requiredTech = TechnologyTreeUtils.getTechnologyById(req.key);
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      if (requiredTech) {
+                        handleSelectTechnologyInDrawer(requiredTech);
+                      }
+                    }}
+                    className={`w-full flex items-center justify-between text-xs p-3 rounded-lg border transition-all duration-200 hover:scale-105 touch-manipulation ${
+                      isMet 
+                        ? 'bg-neon-green/10 border-neon-green/30 text-neon-green hover:bg-neon-green/20' 
+                        : 'bg-neon-red/10 border-neon-red/30 text-neon-red hover:bg-neon-red/20'
+                    }`}
+                  >
+                    <span className="truncate">{TechnologyTreeUtils.getRequirementText(req)}</span>
+                    <div className="flex items-center space-x-2 ml-3">
+                      <span className="font-rajdhani font-medium">{currentLevel}/{req.level}</span>
+                      {isMet ? <CheckCircle className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+        )}
 
         {/* Technology Path */}
         {path.length > 1 && (
@@ -532,7 +527,7 @@ export default function TechnologyTreeView() {
                     <React.Fragment key={tech.id}>
                       <button
                         onClick={() => handleSelectTechnologyInDrawer(tech)}
-                        className={`px-3 py-1 rounded text-xs font-rajdhani font-medium border transition-all duration-200 hover:scale-105 ${
+                        className={`px-2 lg:px-3 py-1 rounded text-xs font-rajdhani font-medium border transition-all duration-200 hover:scale-105 touch-manipulation ${
                           isCompleted 
                             ? 'bg-neon-green/20 border-neon-green/30 text-neon-green hover:bg-neon-green/30'
                             : techStatus.canBuild
@@ -560,7 +555,7 @@ export default function TechnologyTreeView() {
               <p className="text-sm text-gray-400">
                 Esta tecnología desbloquea las siguientes opciones:
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-2 lg:gap-3">
                 {selectedTechnology.unlocks.map(unlockId => {
                   const unlockedTech = TechnologyTreeUtils.getTechnologyById(unlockId);
                   if (!unlockedTech) return null;
@@ -572,7 +567,7 @@ export default function TechnologyTreeView() {
                     <button
                       key={unlockId}
                       onClick={() => handleSelectTechnologyInDrawer(unlockedTech)}
-                      className={`flex items-center space-x-3 p-3 rounded-lg border transition-all duration-200 hover:scale-105 ${unlockColorClass.bg} ${unlockColorClass.border} hover:${unlockColorClass.hover}`}
+                      className={`flex items-center space-x-3 p-3 rounded-lg border transition-all duration-200 hover:scale-105 touch-manipulation ${unlockColorClass.bg} ${unlockColorClass.border} ${unlockColorClass.hover}`}
                     >
                       <UnlockIcon className={`w-4 h-4 ${unlockColorClass.text}`} />
                       <span className="text-sm font-rajdhani font-medium text-white">
@@ -593,7 +588,7 @@ export default function TechnologyTreeView() {
               <p className="text-sm text-gray-400">
                 Las siguientes tecnologías requieren {selectedTechnology.name}:
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-2 lg:gap-3">
                 {dependents.map(dependent => {
                   const DependentIcon = getCategoryIcon(dependent.category);
                   const dependentColorClass = getCategoryColorClass(dependent.category);
@@ -602,7 +597,7 @@ export default function TechnologyTreeView() {
                     <button
                       key={dependent.id}
                       onClick={() => handleSelectTechnologyInDrawer(dependent)}
-                      className={`flex items-center space-x-3 p-3 rounded-lg border transition-all duration-200 hover:scale-105 ${dependentColorClass.bg} ${dependentColorClass.border} hover:${dependentColorClass.hover}`}
+                      className={`flex items-center space-x-3 p-3 rounded-lg border transition-all duration-200 hover:scale-105 touch-manipulation ${dependentColorClass.bg} ${dependentColorClass.border} ${dependentColorClass.hover}`}
                     >
                       <DependentIcon className={`w-4 h-4 ${dependentColorClass.text}`} />
                       <span className="text-sm font-rajdhani font-medium text-white">
@@ -618,36 +613,6 @@ export default function TechnologyTreeView() {
       </div>
     );
   };
-
-  const renderTechnologyDetailsDrawer = () => (
-    <>
-      {/* Drawer para móviles */}
-      <div className={`lg:hidden fixed inset-0 z-50 transition-transform duration-300 ${
-        showDetailsDrawer ? 'translate-x-0' : 'translate-x-full'
-      }`}>
-        <div className="absolute inset-0 bg-black/50" onClick={handleCloseDrawer} />
-        <div className="absolute right-0 top-0 h-full w-full max-w-md bg-space-900 border-l border-space-700 overflow-y-auto">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-orbitron font-bold text-white">Detalles de Tecnología</h2>
-              <button
-                onClick={handleCloseDrawer}
-                className="p-2 bg-space-700 rounded-lg hover:bg-space-600 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            {renderTechnologyDetails()}
-          </div>
-        </div>
-      </div>
-
-      {/* Panel normal para desktop */}
-      <div className="hidden lg:block lg:col-span-1">
-        {renderTechnologyDetails()}
-      </div>
-    </>
-  );
 
   return (
     <div className="space-y-6">
@@ -694,7 +659,7 @@ export default function TechnologyTreeView() {
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
-              className={`flex items-center space-x-2 px-4 py-3 rounded-lg font-rajdhani font-medium transition-all duration-200 whitespace-nowrap ${
+              className={`flex items-center space-x-2 px-4 py-3 rounded-lg font-rajdhani font-medium transition-all duration-200 whitespace-nowrap touch-manipulation ${
                 selectedCategory === category.id
                   ? `${categoryColorClass.bg} ${categoryColorClass.text} border ${categoryColorClass.border}`
                   : 'text-gray-400 hover:text-white hover:bg-space-700/50'
@@ -723,9 +688,43 @@ export default function TechnologyTreeView() {
           )}
         </div>
 
-        {/* Technology Details */}
-        {renderTechnologyDetailsDrawer()}
+        {/* Technology Details - Desktop */}
+        <div className="hidden lg:block lg:col-span-1">
+          {renderTechnologyDetails()}
+        </div>
       </div>
+
+      {/* Mobile Details Drawer */}
+      {showDetailsDrawer && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          {/* Overlay */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={handleCloseDrawer}
+          />
+          
+          {/* Drawer */}
+          <div className="absolute right-0 top-0 h-full w-full max-w-sm bg-space-900 border-l border-space-600 shadow-2xl">
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-space-600 bg-space-800/50">
+                <h2 className="text-lg font-orbitron font-bold text-white">Detalles</h2>
+                <button
+                  onClick={handleCloseDrawer}
+                  className="p-2 bg-space-700 rounded-lg hover:bg-space-600 transition-colors touch-manipulation"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-4">
+                {renderTechnologyDetails()}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

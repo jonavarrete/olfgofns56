@@ -121,22 +121,19 @@ function App() {
           <Routes>
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/*" element={
-              <AdminLayout>
-                <Routes>
-                  <Route path="dashboard" element={<AdminDashboard />} />
-                  <Route path="users" element={<UserManagement />} />
-                  <Route path="users/*" element={<UserManagement />} />
-                  <Route path="content" element={<ContentManagement />} />
-                  <Route path="content/*" element={<ContentManagement />} />
-                  <Route path="security" element={<SecurityManagement />} />
-                  <Route path="security/*" element={<SecurityManagement />} />
-                  <Route path="communication" element={<CommunicationCenter />} />
-                  <Route path="communication/*" element={<CommunicationCenter />} />
-                  <Route path="config/*" element={<div>Configuración - En desarrollo</div>} />
-                </Routes>
-              </AdminLayout>
-            } />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="users/*" element={<UserManagement />} />
+              <Route path="content" element={<ContentManagement />} />
+              <Route path="content/*" element={<ContentManagement />} />
+              <Route path="security" element={<SecurityManagement />} />
+              <Route path="security/*" element={<SecurityManagement />} />
+              <Route path="communication" element={<CommunicationCenter />} />
+              <Route path="communication/*" element={<CommunicationCenter />} />
+              <Route path="config/*" element={<div>Configuración - En desarrollo</div>} />
+              <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            </Route>
             
             {/* Game Routes */}
             <Route path="/login" element={<Login />} />

@@ -38,6 +38,361 @@ export const mockAdminUsers: AdminUser[] = [
   }
 ];
 
+export const mockAdminPvEMissions: AdminPvEMission[] = [
+  {
+    id: 'mission_1',
+    name: 'Primer Contacto',
+    description: 'Establece comunicación con una civilización alienígena recién descubierta.',
+    type: 'diplomacy',
+    difficulty: 'easy',
+    universeId: 'universe_1',
+    requirements: {
+      level: 5,
+      research: { espionageTechnology: 2 },
+      fleet: { espionageProbe: 3 },
+    },
+    rewards: {
+      experience: 1000,
+      resources: { metal: 10000, crystal: 5000, deuterium: 2000, energy: 0, darkMatter: 0 },
+      alienRace: 'traders',
+    },
+    duration: 30,
+    cooldown: 24,
+    location: 'Sector Alfa-7',
+    lore: 'Nuestros sensores han detectado señales de una civilización desconocida. Esta podría ser nuestra oportunidad de establecer relaciones diplomáticas con una nueva especie.',
+    image: 'https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg',
+    active: true,
+    createdBy: 'admin_1',
+    createdAt: Date.now() - 86400000 * 30,
+  },
+  {
+    id: 'mission_2',
+    name: 'Ruinas Ancestrales',
+    description: 'Explora las ruinas de una civilización antigua en busca de tecnología perdida.',
+    type: 'exploration',
+    difficulty: 'medium',
+    universeId: 'universe_1',
+    requirements: {
+      level: 10,
+      research: { astrophysics: 3, espionageTechnology: 4 },
+      fleet: { colonyShip: 1, lightFighter: 10 },
+    },
+    rewards: {
+      experience: 2500,
+      technology: ['gravitonTechnology'],
+      artifacts: ['Ancient Data Core', 'Quantum Resonator'],
+    },
+    duration: 120,
+    cooldown: 72,
+    location: 'Sistema Perdido',
+    lore: 'Antiguos registros hablan de una civilización que desapareció misteriosamente. Sus ruinas podrían contener secretos tecnológicos invaluables.',
+    image: 'https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg',
+    active: true,
+    createdBy: 'admin_1',
+    createdAt: Date.now() - 86400000 * 25,
+  },
+  {
+    id: 'mission_3',
+    name: 'Amenaza Pirata',
+    description: 'Elimina una base pirata que está atacando rutas comerciales.',
+    type: 'combat',
+    difficulty: 'medium',
+    universeId: 'universe_2',
+    requirements: {
+      level: 8,
+      fleet: { lightFighter: 25, heavyFighter: 10 },
+    },
+    rewards: {
+      experience: 1800,
+      resources: { metal: 30000, crystal: 15000, deuterium: 8000, energy: 0, darkMatter: 0 },
+      ships: { recycler: 2 },
+    },
+    duration: 45,
+    cooldown: 48,
+    location: 'Cinturón de Asteroides Kappa',
+    enemyFleet: {
+      smallCargo: 0,
+      largeCargo: 0,
+      lightFighter: 30,
+      heavyFighter: 15,
+      cruiser: 5,
+      battleship: 2,
+      colonyShip: 0,
+      recycler: 3,
+      espionageProbe: 0,
+      bomber: 0,
+      destroyer: 0,
+      deathstar: 0,
+      battlecruiser: 1,
+    },
+    lore: 'Los piratas han establecido una base en el cinturón de asteroides y están interceptando naves comerciales. Es hora de limpiar el sector.',
+    image: 'https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg',
+    active: true,
+    createdBy: 'admin_1',
+    createdAt: Date.now() - 86400000 * 20,
+  },
+  {
+    id: 'mission_4',
+    name: 'Cosecha de Cristales',
+    description: 'Extrae cristales raros de un campo de asteroides peligroso.',
+    type: 'exploration',
+    difficulty: 'easy',
+    universeId: null,
+    requirements: {
+      level: 3,
+      fleet: { smallCargo: 5, recycler: 2 },
+    },
+    rewards: {
+      experience: 800,
+      resources: { metal: 5000, crystal: 25000, deuterium: 0, energy: 0, darkMatter: 0 },
+    },
+    duration: 60,
+    cooldown: 12,
+    location: 'Campo de Asteroides Beta',
+    lore: 'Un campo de asteroides rico en cristales ha sido descubierto. La extracción será peligrosa pero muy lucrativa.',
+    image: 'https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg',
+    active: true,
+    createdBy: 'admin_1',
+    createdAt: Date.now() - 86400000 * 15,
+  },
+  {
+    id: 'mission_5',
+    name: 'Misión de Rescate',
+    description: 'Rescata a científicos atrapados en una estación de investigación.',
+    type: 'rescue',
+    difficulty: 'hard',
+    universeId: 'universe_1',
+    requirements: {
+      level: 15,
+      research: { hyperspaceDrive: 2 },
+      fleet: { cruiser: 5, battleship: 2 },
+      alliance: true,
+    },
+    rewards: {
+      experience: 3500,
+      technology: ['intergalacticResearchNetwork'],
+      resources: { metal: 0, crystal: 0, deuterium: 50000, energy: 0, darkMatter: 0 },
+    },
+    duration: 180,
+    cooldown: 168,
+    location: 'Estación Prometheus',
+    enemyFleet: {
+      smallCargo: 0,
+      largeCargo: 0,
+      lightFighter: 0,
+      heavyFighter: 0,
+      cruiser: 0,
+      battleship: 0,
+      colonyShip: 0,
+      recycler: 0,
+      espionageProbe: 0,
+      bomber: 0,
+      destroyer: 3,
+      deathstar: 0,
+      battlecruiser: 0,
+    },
+    lore: 'Una estación de investigación ha perdido contacto después de experimentar con tecnología alienígena. Los científicos necesitan rescate urgente.',
+    image: 'https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg',
+    active: true,
+    createdBy: 'admin_1',
+    createdAt: Date.now() - 86400000 * 10,
+  }
+];
+
+// Generar más misiones automáticamente
+for (let i = 6; i <= 45; i++) {
+  const types: AdminPvEMission['type'][] = ['exploration', 'combat', 'diplomacy', 'trade', 'rescue', 'artifact'];
+  const difficulties: AdminPvEMission['difficulty'][] = ['easy', 'medium', 'hard', 'extreme', 'legendary'];
+  const universes = ['universe_1', 'universe_2', 'universe_3', 'universe_4', null];
+  
+  const type = types[Math.floor(Math.random() * types.length)];
+  const difficulty = difficulties[Math.floor(Math.random() * difficulties.length)];
+  const universe = universes[Math.floor(Math.random() * universes.length)];
+  
+  mockAdminPvEMissions.push({
+    id: `mission_${i}`,
+    name: `Misión ${i}: ${type === 'exploration' ? 'Exploración' : type === 'combat' ? 'Combate' : type === 'diplomacy' ? 'Diplomacia' : type === 'trade' ? 'Comercio' : type === 'rescue' ? 'Rescate' : 'Artefacto'} ${difficulty}`,
+    description: `Misión generada automáticamente de tipo ${type} con dificultad ${difficulty}.`,
+    type,
+    difficulty,
+    universeId: universe,
+    requirements: { level: Math.floor(Math.random() * 20) + 1 },
+    rewards: { 
+      experience: Math.floor(Math.random() * 5000) + 500,
+      resources: { 
+        metal: Math.floor(Math.random() * 50000) + 10000, 
+        crystal: Math.floor(Math.random() * 25000) + 5000, 
+        deuterium: Math.floor(Math.random() * 15000) + 2000, 
+        energy: 0, 
+        darkMatter: 0 
+      }
+    },
+    duration: Math.floor(Math.random() * 180) + 30,
+    cooldown: Math.floor(Math.random() * 72) + 12,
+    location: `Sector ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}-${Math.floor(Math.random() * 99) + 1}`,
+    lore: `Esta es una misión generada automáticamente para demostrar el sistema de contenido PvE.`,
+    image: 'https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg',
+    active: Math.random() > 0.2,
+    createdBy: 'admin_1',
+    createdAt: Date.now() - Math.floor(Math.random() * 86400000 * 60),
+  });
+}
+
+export const mockAdminAlienRaces: AdminAlienRace[] = [
+  {
+    id: 'race_1',
+    name: 'Zephyrianos',
+    description: 'Una raza antigua de seres energéticos que dominan la tecnología de cristales.',
+    homeworld: 'Zephyr Prime',
+    type: 'peaceful',
+    traits: {
+      technology: 9,
+      military: 4,
+      diplomacy: 8,
+      trade: 7,
+      expansion: 3,
+    },
+    specialties: [
+      'Tecnología de Cristales Avanzada',
+      'Manipulación de Energía',
+      'Arquitectura Flotante',
+      'Medicina Regenerativa'
+    ],
+    weaknesses: [
+      'Vulnerable a campos electromagnéticos',
+      'Dependientes de cristales de energía',
+      'Pacifistas por naturaleza'
+    ],
+    preferredDiplomacy: 'alliance',
+    rarity: 'uncommon',
+    rewards: {
+      technology: ['energyTechnology', 'shieldingTechnology'],
+      resources: { metal: 0, crystal: 50000, deuterium: 0, energy: 10000, darkMatter: 0 },
+    },
+    lore: 'Los Zephyrianos evolucionaron en un mundo de cristales flotantes, desarrollando la capacidad de manipular la energía pura. Su civilización se basa en la armonía y el conocimiento, construyendo ciudades que flotan en el aire mediante campos de energía cristalina.',
+    image: 'https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg',
+    active: true,
+    createdBy: 'admin_1',
+    createdAt: Date.now() - 86400000 * 30,
+  },
+  {
+    id: 'race_2',
+    name: 'Nacidos del Vacío',
+    description: 'Entidades sombrias que emergen del espacio profundo, maestros de la guerra.',
+    homeworld: 'Nexus Oscuro',
+    type: 'aggressive',
+    traits: {
+      technology: 7,
+      military: 10,
+      diplomacy: 2,
+      trade: 3,
+      expansion: 9,
+    },
+    specialties: [
+      'Tecnología de Materia Oscura',
+      'Naves Stealth',
+      'Armas de Antimateria',
+      'Tácticas de Guerra Psicológica'
+    ],
+    weaknesses: [
+      'Vulnerables a la luz intensa',
+      'Dificultad para diplomacia',
+      'Dependientes de materia oscura'
+    ],
+    preferredDiplomacy: 'hostile',
+    rarity: 'rare',
+    rewards: {
+      technology: ['weaponsTechnology', 'hyperspaceTechnology'],
+      ships: { destroyer: 1, bomber: 2 },
+    },
+    lore: 'Surgieron de las profundidades del espacio intergaláctico, donde la materia oscura es abundante. Su sociedad se basa en la conquista y la absorción de otras civilizaciones para alimentar su crecimiento exponencial.',
+    image: 'https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg',
+    active: true,
+    createdBy: 'admin_1',
+    createdAt: Date.now() - 86400000 * 25,
+  },
+  {
+    id: 'race_3',
+    name: 'Entidades Cristalinas',
+    description: 'Seres de silicio puro que viven en simbiosis con estructuras cristalinas.',
+    homeworld: 'Mundo Cristal',
+    type: 'neutral',
+    traits: {
+      technology: 8,
+      military: 6,
+      diplomacy: 5,
+      trade: 9,
+      expansion: 4,
+    },
+    specialties: [
+      'Minería Avanzada',
+      'Construcción Cristalina',
+      'Almacenamiento Cuántico',
+      'Purificación de Recursos'
+    ],
+    weaknesses: [
+      'Lentos para adaptarse',
+      'Vulnerables a vibraciones sónicas',
+      'Requieren ambientes específicos'
+    ],
+    preferredDiplomacy: 'trade',
+    rarity: 'common',
+    rewards: {
+      resources: { metal: 25000, crystal: 100000, deuterium: 0, energy: 0, darkMatter: 0 },
+      technology: ['computerTechnology'],
+    },
+    lore: 'Evolucionaron en un planeta rico en cristales, desarrollando cuerpos de silicio que les permiten procesar y almacenar información de manera extraordinaria. Son los mejores mineros y comerciantes de la galaxia.',
+    image: 'https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg',
+    active: true,
+    createdBy: 'admin_1',
+    createdAt: Date.now() - 86400000 * 20,
+  }
+];
+
+// Generar más razas automáticamente
+for (let i = 4; i <= 23; i++) {
+  const types: AdminAlienRace['type'][] = ['peaceful', 'neutral', 'aggressive', 'ancient', 'mysterious'];
+  const rarities: AdminAlienRace['rarity'][] = ['common', 'uncommon', 'rare', 'legendary', 'mythic'];
+  const diplomacies: AdminAlienRace['preferredDiplomacy'][] = ['alliance', 'trade', 'neutral', 'hostile'];
+  
+  const type = types[Math.floor(Math.random() * types.length)];
+  const rarity = rarities[Math.floor(Math.random() * rarities.length)];
+  const diplomacy = diplomacies[Math.floor(Math.random() * diplomacies.length)];
+  
+  mockAdminAlienRaces.push({
+    id: `race_${i}`,
+    name: `Raza ${i}`,
+    description: `Raza alienígena generada automáticamente de tipo ${type}.`,
+    homeworld: `Mundo ${i}`,
+    type,
+    traits: {
+      technology: Math.floor(Math.random() * 10) + 1,
+      military: Math.floor(Math.random() * 10) + 1,
+      diplomacy: Math.floor(Math.random() * 10) + 1,
+      trade: Math.floor(Math.random() * 10) + 1,
+      expansion: Math.floor(Math.random() * 10) + 1,
+    },
+    specialties: [`Especialidad ${i}A`, `Especialidad ${i}B`],
+    weaknesses: [`Debilidad ${i}A`, `Debilidad ${i}B`],
+    preferredDiplomacy: diplomacy,
+    rarity,
+    rewards: {
+      resources: { 
+        metal: Math.floor(Math.random() * 50000), 
+        crystal: Math.floor(Math.random() * 50000), 
+        deuterium: Math.floor(Math.random() * 25000), 
+        energy: 0, 
+        darkMatter: 0 
+      }
+    },
+    lore: `Esta es una raza alienígena generada automáticamente para demostrar el sistema de contenido.`,
+    image: 'https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg',
+    active: Math.random() > 0.3,
+    createdBy: 'admin_1',
+    createdAt: Date.now() - Math.floor(Math.random() * 86400000 * 90),
+  });
+}
+
 export const mockPlayerAccounts: PlayerAccount[] = [
   {
     id: 'player_1',

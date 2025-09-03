@@ -180,10 +180,10 @@ export default function GlobalStats({ onClose }: GlobalStatsProps) {
               <Button variant="secondary" size="sm" onClick={loadGlobalStats}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Actualizar
-                <Button variant="secondary" size="sm" onClick={() => window.open('/hall-of-fame', '_blank')}>
-                  <Trophy className="w-4 h-4 mr-2" />
-                  Salón de la Fama
-                </Button>
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => window.open('/hall-of-fame', '_blank')}>
+                <Trophy className="w-4 h-4 mr-2" />
+                Salón de la Fama
               </Button>
               <button
                 onClick={onClose}

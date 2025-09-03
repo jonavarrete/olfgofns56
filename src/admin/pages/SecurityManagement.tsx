@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminCard from '../components/AdminCard';
 import Button from '../../components/UI/Button';
+import ViolationDetailModal from '../components/ViolationDetailModal';
 import { 
   Shield, 
   AlertTriangle, 
@@ -27,6 +28,8 @@ export default function SecurityManagement() {
   const [activeTab, setActiveTab] = useState<SecurityTab>('violations');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedViolation, setSelectedViolation] = useState<Violation | null>(null);
+  const [violations, setViolations] = useState<Violation[]>([]);
 
   const tabs = [
     { id: 'violations', name: 'Violaciones', icon: AlertTriangle, count: 23 },
@@ -41,6 +44,39 @@ export default function SecurityManagement() {
 
   const loadSecurityData = async () => {
     setLoading(true);
+    
+    // Load mock violations data
+    const mockViolations: Violation[] = [
+      {
+        id: 'v1',
+        type: 'cheating',
+        description: 'Uso de bots para automatizar construcción detectado',
+        severity: 'severe',
+        reportedBy: 'AutoDetection',
+        reportedAt: Date.now() - 86400000,
+        status: 'pending'
+      },
+      {
+        id: 'v2',
+        type: 'harassment',
+        description: 'Mensajes ofensivos reportados por múltiples usuarios',
+        severity: 'moderate',
+        reportedBy: 'player_123',
+        reportedAt: Date.now() - 86400000 * 2,
+        status: 'investigating'
+      },
+      {
+        id: 'v3',
+        type: 'multi_account',
+        description: 'Múltiples cuentas desde la misma IP detectadas',
+        severity: 'critical',
+        reportedBy: 'AutoDetection',
+        reportedAt: Date.now() - 86400000 * 3,
+        status: 'resolved'
+      }
+    ];
+    
+    setViolations(mockViolations);
     await new Promise(resolve => setTimeout(resolve, 500));
     setLoading(false);
   };
@@ -64,6 +100,16 @@ export default function SecurityManagement() {
     if (hours > 0) return `${hours}h`;
     return 'Ahora';
   };
+
+  const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'pending': return 'text-neon-orange';
+    case 'investigating': return 'text-neon-blue';
+    case 'resolved': return 'text-neon-green';
+    case 'dismissed': return 'text-gray-400';
+    default: return 'text-gray-400';
+  }
+};
 
   return (
     <div className="space-y-6">
@@ -170,43 +216,44 @@ export default function SecurityManagement() {
         ) : (
           <div className="space-y-4">
             {activeTab === 'violations' && (
-              <div className="space-y-3">
-                {Array.from({ length: 8 }, (_, i) => (
-                  <div key={i} className="flex items-center space-x-4 p-4 bg-space-700/30 rounded-lg border border-space-600">
-                    <div className={`p-2 rounded border ${getSeverityColor(['critical', 'severe', 'moderate', 'minor'][i % 4])}`}>
-                      <AlertTriangle className="w-4 h-4" />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h4 className="font-rajdhani font-semibold text-white">
-                            Usuario: SpaceHacker{i + 1}
-                          </h4>
-                          <p className="text-sm text-gray-400">
-                            Uso de bots para automatizar construcción
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 rounded text-xs font-rajdhani font-medium ${getSeverityColor(['critical', 'severe', 'moderate', 'minor'][i % 4])}`}>
-                            {['CRÍTICA', 'SEVERA', 'MODERADA', 'MENOR'][i % 4]}
-                          </span>
-                          <button className="p-1 text-gray-400 hover:text-neon-blue transition-colors">
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                        <span>Reportado hace {formatTimeAgo(Date.now() - Math.random() * 86400000)}</span>
-                        <span>IP: 192.168.1.{100 + i}</span>
-                        <span className="text-neon-orange">Pendiente</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+  <div className="space-y-3">
+    {violations.map((violation) => (
+      <div key={violation.id} className="flex items-center space-x-4 p-4 bg-space-700/30 rounded-lg border border-space-600 hover:border-neon-blue/30 transition-colors cursor-pointer"
+           onClick={() => setSelectedViolation(violation)}>
+        <div className={`p-2 rounded border ${getSeverityColor(violation.severity)}`}>
+          <AlertTriangle className="w-4 h-4" />
+        </div>
+        
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between">
+            <div>
+              <h4 className="font-rajdhani font-semibold text-white">
+                Violación: {violation.type}
+              </h4>
+              <p className="text-sm text-gray-400">
+                {violation.description}
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className={`px-2 py-1 rounded text-xs font-rajdhani font-medium ${getSeverityColor(violation.severity)}`}>
+                {violation.severity.toUpperCase()}
+              </span>
+              <button className="p-1 text-gray-400 hover:text-neon-blue transition-colors">
+                <Eye className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+            <span>Reportado hace {formatTimeAgo(violation.reportedAt)}</span>
+            <span>Por: {violation.reportedBy}</span>
+            <span className={getStatusColor(violation.status)}>{violation.status.toUpperCase()}</span>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
 
             {activeTab === 'ip_bans' && (
               <div className="space-y-3">
@@ -338,6 +385,21 @@ export default function SecurityManagement() {
           </div>
         )}
       </AdminCard>
+
+      {/* Violation Detail Modal */}
+      {selectedViolation && (
+        <ViolationDetailModal
+          violation={selectedViolation}
+          onClose={() => setSelectedViolation(null)}
+          onUpdate={(updatedViolation) => {
+            setViolations(prev => prev.map(v => v.id === updatedViolation.id ? updatedViolation : v));
+            setSelectedViolation(null);
+          }}
+          onApplyPenalty={(penalty) => {
+            console.log('Penalty applied:', penalty);
+          }}
+        />
+      )}
     </div>
   );
 }

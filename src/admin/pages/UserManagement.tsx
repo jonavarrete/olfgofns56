@@ -4,6 +4,7 @@ import AdminCard from '../components/AdminCard';
 import Button from '../../components/UI/Button';
 import UserEditor from '../components/UserEditor';
 import UserTimeline from '../components/UserTimeline';
+import PlanetManager from '../components/PlanetManager';
 import { 
   Users, 
   Search, 
@@ -34,6 +35,7 @@ export default function UserManagement() {
   const [selectedUser, setSelectedUser] = useState<PlayerAccount | null>(null);
   const [showUserEditor, setShowUserEditor] = useState(false);
   const [showUserTimeline, setShowUserTimeline] = useState(false);
+  const [showPlanetManager, setShowPlanetManager] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -317,6 +319,16 @@ export default function UserManagement() {
                           <Clock className="w-4 h-4" />
                         </button>
                         <button
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setShowPlanetManager(true);
+                          }}
+                          className="p-1 text-gray-400 hover:text-neon-purple transition-colors"
+                          title="Gestionar Planetas"
+                        >
+                          <Globe className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => handleUserAction('ban', user)}
                           className="p-1 text-gray-400 hover:text-neon-red transition-colors"
                           title="Banear"
@@ -355,6 +367,25 @@ export default function UserManagement() {
           user={selectedUser}
           onClose={() => {
             setShowUserTimeline(false);
+            setSelectedUser(null);
+          }}
+        />
+      )}
+
+      {/* Planet Manager Modal */}
+      {showPlanetManager && selectedUser && (
+        <PlanetManager
+          userId={selectedUser.id}
+          planets={selectedUser.planets}
+          onSave={(planets) => {
+            setUsers(prev => prev.map(u => 
+              u.id === selectedUser.id ? { ...u, planets } : u
+            ));
+            setShowPlanetManager(false);
+            setSelectedUser(null);
+          }}
+          onClose={() => {
+            setShowPlanetManager(false);
             setSelectedUser(null);
           }}
         />

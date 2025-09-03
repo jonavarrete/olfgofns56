@@ -60,8 +60,8 @@ const navigation = [
     indent: true
   },
   { 
-    name: 'Gestión de Universos', 
-    href: '/admin/universes', 
+    name: 'Universos', 
+    href: '/admin/content/universes', 
     icon: Globe,
     category: 'content'
   },
@@ -89,6 +89,13 @@ const navigation = [
     name: 'Noticias GNN', 
     href: '/admin/content/news', 
     icon: Radio,
+    category: 'content',
+    indent: true
+  },
+  { 
+    name: 'Gestión de Universos', 
+    href: '/admin/content/universes', 
+    icon: Globe,
     category: 'content',
     indent: true
   },

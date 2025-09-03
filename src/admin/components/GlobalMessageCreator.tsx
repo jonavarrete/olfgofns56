@@ -19,20 +19,21 @@ import {
 } from 'lucide-react';
 
 interface GlobalMessageCreatorProps {
+  message?: GlobalMessage | null;
   onClose: () => void;
   onSave: (message: Omit<GlobalMessage, 'id' | 'sentAt' | 'readBy'>) => void;
 }
 
-export default function GlobalMessageCreator({ onClose, onSave }: GlobalMessageCreatorProps) {
+export default function GlobalMessageCreator({ message, onClose, onSave }: GlobalMessageCreatorProps) {
   const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    type: 'announcement' as GlobalMessage['type'],
-    priority: 'medium' as GlobalMessage['priority'],
-    targetAudience: 'all' as GlobalMessage['targetAudience'],
-    targetIds: [] as string[],
-    scheduledFor: '',
-    expiresAt: '',
+    title: message?.title || '',
+    content: message?.content || '',
+    type: message?.type || 'announcement' as GlobalMessage['type'],
+    priority: message?.priority || 'medium' as GlobalMessage['priority'],
+    targetAudience: message?.targetAudience || 'all' as GlobalMessage['targetAudience'],
+    targetIds: message?.targetIds || [] as string[],
+    scheduledFor: message?.scheduledFor ? new Date(message.scheduledFor).toISOString().slice(0, 16) : '',
+    expiresAt: message?.expiresAt ? new Date(message.expiresAt).toISOString().slice(0, 16) : '',
   });
   
   const [saving, setSaving] = useState(false);
@@ -93,7 +94,7 @@ export default function GlobalMessageCreator({ onClose, onSave }: GlobalMessageC
         <div className="flex items-center justify-between border-b border-space-600 p-6">
           <div>
             <h2 className="text-xl font-orbitron font-bold text-white">
-              Crear Mensaje Global
+              {message ? 'Editar Mensaje Global' : 'Crear Mensaje Global'}
             </h2>
             <p className="text-gray-400 mt-1">
               Enviar comunicación masiva a usuarios
@@ -313,7 +314,7 @@ export default function GlobalMessageCreator({ onClose, onSave }: GlobalMessageC
               disabled={!formData.title || !formData.content}
             >
               <Send className="w-4 h-4 mr-2" />
-              {formData.scheduledFor ? 'Programar Envío' : 'Enviar Ahora'}
+              {message ? 'Actualizar' : formData.scheduledFor ? 'Programar Envío' : 'Enviar Ahora'}
             </Button>
           </div>
         </div>

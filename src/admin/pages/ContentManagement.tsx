@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminCard from '../components/AdminCard';
 import Button from '../../components/UI/Button';
+import PvEMissionEditor from '../components/PvEMissionEditor';
+import AlienRaceEditor from '../components/AlienRaceEditor';
+import GNNNewsEditor from '../components/GNNNewsEditor';
 import { 
   Target, 
   Crown, 
@@ -27,6 +30,66 @@ export default function ContentManagement() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<ContentTab>('missions');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showMissionEditor, setShowMissionEditor] = useState(false);
+  const [showAlienEditor, setShowAlienEditor] = useState(false);
+  const [showNewsEditor, setShowNewsEditor] = useState(false);
+  const [editingMission, setEditingMission] = useState<AdminPvEMission | null>(null);
+  const [editingAlien, setEditingAlien] = useState<AdminAlienRace | null>(null);
+  const [missions, setMissions] = useState<AdminPvEMission[]>([]);
+  const [aliens, setAliens] = useState<AdminAlienRace[]>([]);
+  const [news, setNews] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    loadContentData();
+  }, [activeTab]);
+
+  const loadContentData = async () => {
+    // Load mock data based on active tab
+    if (activeTab === 'missions') {
+      const mockMissions: AdminPvEMission[] = [
+        {
+          id: '1',
+          name: 'Primer Contacto',
+          description: 'Establece comunicación con una civilización alienígena',
+          type: 'diplomacy',
+          difficulty: 'easy',
+          requirements: { level: 5 },
+          rewards: { experience: 1000 },
+          duration: 30,
+          cooldown: 24,
+          location: 'Sector Alfa-7',
+          lore: 'Una nueva civilización ha sido detectada...',
+          image: 'https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg',
+          active: true,
+          createdBy: 'admin_1',
+          createdAt: Date.now() - 86400000
+        }
+      ];
+      setMissions(mockMissions);
+    } else if (activeTab === 'aliens') {
+      const mockAliens: AdminAlienRace[] = [
+        {
+          id: '1',
+          name: 'Zephyrianos',
+          description: 'Una raza antigua de seres energéticos',
+          homeworld: 'Zephyr Prime',
+          type: 'peaceful',
+          traits: { technology: 9, military: 4, diplomacy: 8, trade: 7, expansion: 3 },
+          specialties: ['Tecnología de Cristales'],
+          weaknesses: ['Vulnerable a campos electromagnéticos'],
+          preferredDiplomacy: 'alliance',
+          rarity: 'uncommon',
+          rewards: { technology: ['energyTechnology'] },
+          lore: 'Los Zephyrianos evolucionaron en un mundo de cristales...',
+          image: 'https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg',
+          active: true,
+          createdBy: 'admin_1',
+          createdAt: Date.now() - 86400000 * 2
+        }
+      ];
+      setAliens(mockAliens);
+    }
+  };
 
   const tabs = [
     { id: 'missions', name: 'Misiones PvE', icon: Target, count: 45 },
@@ -50,12 +113,9 @@ export default function ContentManagement() {
         <Button 
           variant="primary"
           onClick={() => {
-            const routes = {
-              missions: '/admin/content/missions/create',
-              aliens: '/admin/content/aliens/create',
-              news: '/admin/content/news/create'
-            };
-            navigate(routes[activeTab]);
+            if (activeTab === 'missions') setShowMissionEditor(true);
+            else if (activeTab === 'aliens') setShowAlienEditor(true);
+            else if (activeTab === 'news') setShowNewsEditor(true);
           }}
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -111,34 +171,47 @@ export default function ContentManagement() {
         <AdminCard title="Misiones PvE" icon={Target} color="neon-purple">
           <div className="space-y-4">
             {/* Mission List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }, (_, i) => (
-                <div key={i} className="p-4 bg-space-700/30 rounded-lg border border-space-600 hover:border-neon-blue/30 transition-colors">
+            <div className="space-y-3">
+              {missions.map((mission) => (
+                <div key={mission.id} className="p-4 bg-space-700/30 rounded-lg border border-space-600 hover:border-neon-blue/30 transition-colors">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h4 className="font-rajdhani font-semibold text-white">
-                        Misión de Ejemplo {i + 1}
+                        {mission.name}
                       </h4>
-                      <p className="text-xs text-gray-400">Exploración • Dificultad Media</p>
+                      <p className="text-xs text-gray-400">{mission.type} • {mission.difficulty}</p>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <button className="p-1 text-gray-400 hover:text-neon-blue transition-colors">
+                      <button 
+                        onClick={() => {
+                          setEditingMission(mission);
+                          setShowMissionEditor(true);
+                        }}
+                        className="p-1 text-gray-400 hover:text-neon-blue transition-colors"
+                      >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="p-1 text-gray-400 hover:text-neon-red transition-colors">
+                      <button 
+                        onClick={() => setMissions(prev => prev.filter(m => m.id !== mission.id))}
+                        className="p-1 text-gray-400 hover:text-neon-red transition-colors"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
                   
                   <p className="text-sm text-gray-300 mb-3">
-                    Explora un sector desconocido en busca de nuevos recursos...
+                    {mission.description}
                   </p>
                   
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-400">Creada hace 2d</span>
-                    <span className="px-2 py-1 bg-neon-green/20 text-neon-green rounded">
-                      Activa
+                    <span className="text-gray-400">
+                      Creada hace {Math.floor((Date.now() - mission.createdAt) / 86400000)}d
+                    </span>
+                    <span className={`px-2 py-1 rounded ${
+                      mission.active ? 'bg-neon-green/20 text-neon-green' : 'bg-neon-red/20 text-neon-red'
+                    }`}>
+                      {mission.active ? 'Activa' : 'Inactiva'}
                     </span>
                   </div>
                 </div>
@@ -152,34 +225,47 @@ export default function ContentManagement() {
         <AdminCard title="Razas Alienígenas" icon={Crown} color="neon-orange">
           <div className="space-y-4">
             {/* Alien Race List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }, (_, i) => (
-                <div key={i} className="p-4 bg-space-700/30 rounded-lg border border-space-600 hover:border-neon-blue/30 transition-colors">
+            <div className="space-y-3">
+              {aliens.map((alien) => (
+                <div key={alien.id} className="p-4 bg-space-700/30 rounded-lg border border-space-600 hover:border-neon-blue/30 transition-colors">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h4 className="font-rajdhani font-semibold text-white">
-                        Raza Ejemplo {i + 1}
+                        {alien.name}
                       </h4>
-                      <p className="text-xs text-gray-400">Pacífica • Tecnológica</p>
+                      <p className="text-xs text-gray-400">{alien.type} • {alien.rarity}</p>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <button className="p-1 text-gray-400 hover:text-neon-blue transition-colors">
+                      <button 
+                        onClick={() => {
+                          setEditingAlien(alien);
+                          setShowAlienEditor(true);
+                        }}
+                        className="p-1 text-gray-400 hover:text-neon-blue transition-colors"
+                      >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="p-1 text-gray-400 hover:text-neon-red transition-colors">
+                      <button 
+                        onClick={() => setAliens(prev => prev.filter(a => a.id !== alien.id))}
+                        className="p-1 text-gray-400 hover:text-neon-red transition-colors"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
                   
                   <p className="text-sm text-gray-300 mb-3">
-                    Una civilización avanzada especializada en tecnología...
+                    {alien.description}
                   </p>
                   
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-400">Creada hace 1w</span>
-                    <span className="px-2 py-1 bg-neon-green/20 text-neon-green rounded">
-                      Activa
+                    <span className="text-gray-400">
+                      Creada hace {Math.floor((Date.now() - alien.createdAt) / 86400000)}d
+                    </span>
+                    <span className={`px-2 py-1 rounded ${
+                      alien.active ? 'bg-neon-green/20 text-neon-green' : 'bg-neon-red/20 text-neon-red'
+                    }`}>
+                      {alien.active ? 'Activa' : 'Inactiva'}
                     </span>
                   </div>
                 </div>
@@ -236,6 +322,67 @@ export default function ContentManagement() {
             </div>
           </div>
         </AdminCard>
+      )}
+
+      {/* Editors */}
+      {showMissionEditor && (
+        <PvEMissionEditor
+          mission={editingMission}
+          onSave={(missionData) => {
+            if (editingMission) {
+              setMissions(prev => prev.map(m => m.id === editingMission.id ? { ...m, ...missionData } : m));
+            } else {
+              const newMission: AdminPvEMission = {
+                id: Date.now().toString(),
+                ...missionData,
+                createdBy: 'current_admin_id',
+                createdAt: Date.now()
+              } as AdminPvEMission;
+              setMissions(prev => [newMission, ...prev]);
+            }
+            setShowMissionEditor(false);
+            setEditingMission(null);
+          }}
+          onClose={() => {
+            setShowMissionEditor(false);
+            setEditingMission(null);
+          }}
+        />
+      )}
+
+      {showAlienEditor && (
+        <AlienRaceEditor
+          alien={editingAlien}
+          onSave={(alienData) => {
+            if (editingAlien) {
+              setAliens(prev => prev.map(a => a.id === editingAlien.id ? { ...a, ...alienData } : a));
+            } else {
+              const newAlien: AdminAlienRace = {
+                id: Date.now().toString(),
+                ...alienData,
+                createdBy: 'current_admin_id',
+                createdAt: Date.now()
+              } as AdminAlienRace;
+              setAliens(prev => [newAlien, ...prev]);
+            }
+            setShowAlienEditor(false);
+            setEditingAlien(null);
+          }}
+          onClose={() => {
+            setShowAlienEditor(false);
+            setEditingAlien(null);
+          }}
+        />
+      )}
+
+      {showNewsEditor && (
+        <GNNNewsEditor
+          onSave={(newsData) => {
+            console.log('Saving news:', newsData);
+            setShowNewsEditor(false);
+          }}
+          onClose={() => setShowNewsEditor(false)}
+        />
       )}
     </div>
   );

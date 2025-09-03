@@ -31,6 +31,12 @@ import UserManagement from './admin/pages/UserManagement';
 import ContentManagement from './admin/pages/ContentManagement';
 import SecurityManagement from './admin/pages/SecurityManagement';
 import CommunicationCenter from './admin/pages/CommunicationCenter';
+import PlatformConfig from './admin/pages/PlatformConfig';
+import ExternalAPIs from './admin/pages/ExternalAPIs';
+import TemplateManagement from './admin/pages/TemplateManagement';
+import LanguageManagement from './admin/pages/LanguageManagement';
+import UniverseManagement from './admin/pages/UniverseManagement';
+import UserCreation from './admin/pages/UserCreation';
 import AdminLayout from './admin/layout/AdminLayout';
 import { AdminProvider } from './admin/context/AdminContext';
 import { Rocket} from 'lucide-react';
@@ -124,13 +130,19 @@ function App() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="users" element={<UserManagement />} />
+              <Route path="users/create" element={<UserCreation />} />
               <Route path="users/*" element={<UserManagement />} />
               <Route path="content" element={<ContentManagement />} />
               <Route path="content/*" element={<ContentManagement />} />
+              <Route path="content/universes" element={<UniverseManagement />} />
               <Route path="security" element={<SecurityManagement />} />
               <Route path="security/*" element={<SecurityManagement />} />
               <Route path="communication" element={<CommunicationCenter />} />
               <Route path="communication/*" element={<CommunicationCenter />} />
+              <Route path="config/platform" element={<PlatformConfig />} />
+              <Route path="config/apis" element={<ExternalAPIs />} />
+              <Route path="config/templates" element={<TemplateManagement />} />
+              <Route path="config/languages" element={<LanguageManagement />} />
               <Route path="config/*" element={<div>Configuración - En desarrollo</div>} />
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
             </Route>

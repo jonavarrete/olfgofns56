@@ -29,6 +29,44 @@ export default function CommunicationCenter() {
   const [activeTab, setActiveTab] = useState<CommunicationTab>('messages');
   const [showMessageCreator, setShowMessageCreator] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [messages, setMessages] = useState<GlobalMessage[]>([]);
+  const [editingMessage, setEditingMessage] = useState<GlobalMessage | null>(null);
+  const [viewingMessage, setViewingMessage] = useState<GlobalMessage | null>(null);
+
+  React.useEffect(() => {
+    loadMessages();
+  }, []);
+
+  const loadMessages = async () => {
+    // Load mock messages
+    const mockMessages: GlobalMessage[] = [
+      {
+        id: 'msg_1',
+        title: 'Mantenimiento Programado del Servidor',
+        content: 'El servidor estará en mantenimiento el próximo domingo de 02:00 a 06:00 GMT.',
+        type: 'maintenance',
+        priority: 'high',
+        targetAudience: 'all',
+        sentAt: Date.now() - 86400000,
+        sentBy: 'admin_1',
+        status: 'sent',
+        readBy: []
+      },
+      {
+        id: 'msg_2',
+        title: 'Nuevo Evento: Portal Dimensional',
+        content: 'Un portal dimensional se ha abierto en todos los universos.',
+        type: 'event',
+        priority: 'medium',
+        targetAudience: 'all',
+        sentAt: Date.now() - 86400000 * 2,
+        sentBy: 'admin_1',
+        status: 'sent',
+        readBy: []
+      }
+    ];
+    setMessages(mockMessages);
+  };
 
   const tabs = [
     { id: 'messages', name: 'Mensajes Globales', icon: MessageSquare, count: 45 },
@@ -176,55 +214,51 @@ export default function CommunicationCenter() {
             </div>
 
             {/* Messages List */}
-            <div className="space-y-3">
-              {Array.from({ length: 8 }, (_, i) => (
-                <div key={i} className="flex items-center space-x-4 p-4 bg-space-700/30 rounded-lg border border-space-600 hover:border-neon-blue/30 transition-colors">
-                  <div className={`p-2 rounded border ${getMessageTypeColor(['announcement', 'maintenance', 'event', 'warning'][i % 4])}`}>
-                    <MessageSquare className="w-4 h-4" />
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-rajdhani font-semibold text-white">
-                          {[
-                            'Mantenimiento Programado del Servidor',
-                            'Nuevo Evento: Portal Dimensional',
-                            'Actualización de Balance de Juego',
-                            'Advertencia: Detección de Bots'
-                          ][i % 4]}
-                        </h4>
-                        <p className="text-sm text-gray-400">
-                          Dirigido a: {['Todos los usuarios', 'Galaxia Prima', 'Usuarios nivel 20+', 'Usuarios reportados'][i % 4]}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className={`px-2 py-1 rounded text-xs font-rajdhani font-medium ${getStatusColor(['sent', 'scheduled', 'draft', 'sent'][i % 4])}`}>
-                          {['ENVIADO', 'PROGRAMADO', 'BORRADOR', 'ENVIADO'][i % 4]}
-                        </span>
-                        <div className="flex items-center space-x-1">
-                          <button className="p-1 text-gray-400 hover:text-neon-blue transition-colors">
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button className="p-1 text-gray-400 hover:text-neon-green transition-colors">
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button className="p-1 text-gray-400 hover:text-neon-red transition-colors">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                      <span>Creado hace {formatTimeAgo(Date.now() - Math.random() * 86400000 * 7)}</span>
-                      <span>Leído por: {Math.floor(Math.random() * 5000)} usuarios</span>
-                      <span>Tasa apertura: {Math.floor(Math.random() * 30 + 70)}%</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+<div className="space-y-3">
+  {messages.map((message, index) => (
+    <div key={message.id} className="flex items-center space-x-4 p-4 bg-space-700/30 rounded-lg border border-space-600 hover:border-neon-blue/30 transition-colors">
+      <div className={`p-2 rounded border ${getMessageTypeColor(message.type)}`}>
+        <MessageSquare className="w-4 h-4" />
+      </div>
+      
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between">
+          <div>
+            <h4 className="font-rajdhani font-semibold text-white">
+              {message.title}
+            </h4>
+            <p className="text-sm text-gray-400">
+              Dirigido a: {message.targetAudience === 'all' ? 'Todos los usuarios' : message.targetAudience}
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className={`px-2 py-1 rounded text-xs font-rajdhani font-medium ${getStatusColor(message.status)}`}>
+              {message.status === 'sent' ? 'ENVIADO' : 
+               message.status === 'scheduled' ? 'PROGRAMADO' : 
+               message.status === 'draft' ? 'BORRADOR' : 
+               'EXPIRADO'}
+            </span>
+            <button className="p-1 text-gray-400 hover:text-neon-blue transition-colors">
+              <Eye className="w-4 h-4" />
+            </button>
+            <button className="p-1 text-gray-400 hover:text-neon-orange transition-colors">
+              <Edit className="w-4 h-4" />
+            </button>
+            <button className="p-1 text-gray-400 hover:text-neon-red transition-colors">
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+          <span>Creado hace {formatTimeAgo(message.sentAt)}</span>
+          <span>Leído por: {message.readBy.length} usuarios</span>
+          <span>Tipo: {message.type}</span>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
           </div>
         )}
 
@@ -249,13 +283,101 @@ export default function CommunicationCenter() {
       {/* Global Message Creator Modal */}
       {showMessageCreator && (
         <GlobalMessageCreator
+          message={editingMessage}
           onClose={() => setShowMessageCreator(false)}
           onSave={(message) => {
-            console.log('Saving message:', message);
+            if (editingMessage) {
+              setMessages(prev => prev.map(m => m.id === editingMessage.id ? { ...m, ...message } : m));
+            } else {
+              const newMessage: GlobalMessage = {
+                id: Date.now().toString(),
+                                ...message,
+                readBy: []
+              };
+              setMessages(prev => [newMessage, ...prev]);
+            }
             setShowMessageCreator(false);
+            setEditingMessage(null);
           }}
         />
       )}
+
+      {/* Message Viewer Modal */}
+      {viewingMessage && (
+        <MessageViewer
+          message={viewingMessage}
+          onClose={() => setViewingMessage(null)}
+          onEdit={() => {
+            setEditingMessage(viewingMessage);
+            setViewingMessage(null);
+            setShowMessageCreator(true);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+interface MessageViewerProps {
+  message: GlobalMessage;
+  onClose: () => void;
+  onEdit: () => void;
+}
+
+function MessageViewer({ message, onClose, onEdit }: MessageViewerProps) {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-card-gradient border border-space-600 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-space-600">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-orbitron font-bold text-white">
+              {message.title}
+            </h2>
+            <div className="flex items-center space-x-3">
+              <Button variant="secondary" onClick={onEdit}>
+                <Edit className="w-4 h-4 mr-2" />
+                Editar
+              </Button>
+              <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-3 bg-space-700/30 rounded border border-space-600">
+              <span className="text-gray-400 text-sm">Tipo:</span>
+              <p className="text-white mt-1 capitalize">{message.type}</p>
+            </div>
+            <div className="p-3 bg-space-700/30 rounded border border-space-600">
+              <span className="text-gray-400 text-sm">Prioridad:</span>
+              <p className="text-white mt-1 capitalize">{message.priority}</p>
+            </div>
+          </div>
+
+          <div className="p-4 bg-space-700/30 rounded border border-space-600">
+            <span className="text-gray-400 text-sm">Contenido:</span>
+            <div className="mt-2 text-gray-300 whitespace-pre-wrap">
+              {message.content}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-3 bg-space-700/30 rounded border border-space-600">
+              <span className="text-gray-400 text-sm">Enviado:</span>
+              <p className="text-white mt-1">
+                {message.sentAt ? new Date(message.sentAt).toLocaleString() : 'No enviado'}
+              </p>
+            </div>
+            <div className="p-3 bg-space-700/30 rounded border border-space-600">
+              <span className="text-gray-400 text-sm">Leído por:</span>
+              <p className="text-white mt-1">{message.readBy.length} usuarios</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

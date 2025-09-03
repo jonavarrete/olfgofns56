@@ -288,6 +288,104 @@ export interface PlatformConfig {
   updatedAt: number;
 }
 
+export interface OGameServerConfig {
+  // Basic Server Information
+  serverName: string;
+  serverUrl: string;
+  serverLanguage: string;
+  serverTimezone: string;
+  
+  // Game Speed Settings
+  universeSpeed: number;
+  fleetSpeed: number;
+  economySpeed: number;
+  researchSpeed: number;
+  
+  // Player Limits
+  maxPlayersPerUniverse: number;
+  maxPlanetsPerPlayer: number;
+  maxMoonsPerPlayer: number;
+  
+  // Protection Settings
+  newbieProtectionTime: number; // hours
+  newbieProtectionLimit: number; // points
+  strongPlayerProtection: boolean;
+  honorableTargetProtection: boolean;
+  
+  // Combat Settings
+  rapidFireEnabled: boolean;
+  debrisFieldFactor: number; // 0.0 to 1.0
+  repairFactor: number; // 0.0 to 1.0
+  
+  // Economic Settings
+  deuteriumConsumptionFactor: number;
+  cargoHyperspaceTechMultiplier: number;
+  
+  // Features
+  alliancesEnabled: boolean;
+  acsEnabled: boolean;
+  expeditionsEnabled: boolean;
+  officersEnabled: boolean;
+  
+  // Communication
+  messagesEnabled: boolean;
+  combatReportsEnabled: boolean;
+  spyReportsEnabled: boolean;
+  
+  // Events
+  eventsEnabled: boolean;
+  eventFrequency: number; // days
+  
+  // Maintenance
+  maintenanceMode: boolean;
+  maintenanceMessage: string;
+  
+  // Registration
+  registrationEnabled: boolean;
+  inviteOnlyMode: boolean;
+  emailVerificationRequired: boolean;
+  
+  // Security
+  multiAccountCheck: boolean;
+  proxyCheck: boolean;
+  sessionTimeout: number; // minutes
+  
+  // Backup
+  autoBackupEnabled: boolean;
+  backupRetentionDays: number;
+  
+  // Legal
+  imprintUrl: string;
+  privacyPolicyUrl: string;
+  rulesUrl: string;
+  
+  // Contact
+  adminEmail: string;
+  supportEmail: string;
+  
+  // Social Media
+  facebookUrl: string;
+  discordUrl: string;
+  forumUrl: string;
+  
+  // Advanced
+  jumpGateEnabled: boolean;
+  gravitonTechEnabled: boolean;
+  moonDestructionEnabled: boolean;
+  
+  // API
+  apiEnabled: boolean;
+  apiRateLimit: number;
+  
+  // Statistics
+  statisticsEnabled: boolean;
+  hallOfFameEnabled: boolean;
+  
+  // Notifications
+  emailNotificationsEnabled: boolean;
+  pushNotificationsEnabled: boolean;
+}
+
 export interface UniverseConfig {
   id: string;
   name: string;

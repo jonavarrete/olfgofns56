@@ -3,6 +3,7 @@ import { NewsItem } from '../../types/news';
 import { getNewsByPriority } from '../../data/newsData';
 import Card from '../UI/Card';
 import Button from '../UI/Button';
+import HallOfFameModal from '../HallOfFame/HallOfFameModal';
 import { 
   Radio, 
   Clock, 
@@ -25,6 +26,7 @@ import {
 export default function GalacticNewsNetwork() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
+  const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -95,6 +97,9 @@ export default function GalacticNewsNetwork() {
     setSelectedNews(null);
   };
 
+  const handleViewHallOfFame = () => {
+    setShowHallOfFame(true);
+  };
   if (loading) {
     return (
       <Card className="animate-pulse">
@@ -315,6 +320,14 @@ export default function GalacticNewsNetwork() {
                       <Globe className="w-4 h-4 mr-2" />
                       ¡Únete a {selectedNews.universe} para ser parte de la historia!
                     </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={handleViewHallOfFame}
+                      className="w-full mt-2"
+                    >
+                      <Trophy className="w-4 h-4 mr-2" />
+                      Ver Salón de la Fama
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -348,6 +361,18 @@ export default function GalacticNewsNetwork() {
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Hall of Fame Modal */}
+      {showHallOfFame && (
+        <HallOfFameModal
+          mode="global"
+          onClose={() => setShowHallOfFame(false)}
+          onJoinUniverse={(universeId) => {
+            setShowHallOfFame(false);
+            alert(`Redirigiendo al universo ${universeId}...`);
+          }}
+        />
       )}
     </>
   );

@@ -7,6 +7,7 @@ import Card from '../components/UI/Card';
 import AccountSettings from '../components/Lobby/AccountSettings';
 import GlobalStats from '../components/Lobby/GlobalStats';
 import UniverseNewsFeed from '../components/Lobby/UniverseNewsFeed';
+import HallOfFameModal from '../components/HallOfFame/HallOfFameModal';
 import { 
   Globe, 
   Users, 
@@ -40,6 +41,7 @@ export default function Lobby() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [showGlobalStats, setShowGlobalStats] = useState(false);
+  const [showHallOfFame, setShowHallOfFame] = useState(false);
 
   // Check authentication status
   useEffect(() => {
@@ -269,7 +271,7 @@ export default function Lobby() {
                         <button
                           onClick={() => {
                             setShowUserMenu(false);
-                            navigate('/hall-of-fame');
+                            setShowHallOfFame(true);
                           }}
                           className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-space-600/50 rounded transition-colors"
                         >
@@ -631,6 +633,17 @@ export default function Lobby() {
       
       {showGlobalStats && (
         <GlobalStats onClose={() => setShowGlobalStats(false)} />
+      )}
+      
+      {showHallOfFame && (
+        <HallOfFameModal
+          mode="global"
+          onClose={() => setShowHallOfFame(false)}
+          onJoinUniverse={(universeId) => {
+            setShowHallOfFame(false);
+            setSelectedUniverseId(universeId);
+          }}
+        />
       )}
     </div>
   );

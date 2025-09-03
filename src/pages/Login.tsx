@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/UI/Button';
 import GalacticNewsNetwork from '../components/News/GalacticNewsNetwork';
+import HallOfFameModal from '../components/HallOfFame/HallOfFameModal';
 import { 
   Rocket, 
   Mail, 
@@ -22,6 +23,7 @@ export default function Login() {
   
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     username: '',
@@ -335,7 +337,7 @@ export default function Login() {
                         Descubre los logros más épicos de la galaxia
                       </p>
                       <button
-                        onClick={() => navigate('/hall-of-fame')}
+                        onClick={() => setShowHallOfFame(true)}
                         className="text-xs text-neon-blue hover:text-neon-purple transition-colors font-rajdhani font-medium"
                       >
                         Ver Récords Legendarios →
@@ -348,6 +350,19 @@ export default function Login() {
           </div>
         </div>
       </div>
+      
+      {/* Hall of Fame Modal */}
+      {showHallOfFame && (
+        <HallOfFameModal
+          mode="global"
+          onClose={() => setShowHallOfFame(false)}
+          onJoinUniverse={(universeId) => {
+            setShowHallOfFame(false);
+            // In a real app, this would navigate to universe selection
+            alert(`Redirigiendo al universo ${universeId}...`);
+          }}
+        />
+      )}
     </div>
   );
 }

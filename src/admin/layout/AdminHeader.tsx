@@ -1,9 +1,9 @@
 import React from 'react';
 import { useAdmin } from '../context/AdminContext';
+import AdminNotificationCenter from '../components/AdminNotificationCenter';
 import { 
   Menu, 
   Shield, 
-  Bell, 
   Settings,
   User,
   Globe,
@@ -82,14 +82,7 @@ export default function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
 
         {/* Admin Info */}
         <div className="flex items-center space-x-4">
-          <div className="relative">
-            <button className="p-2 text-gray-400 hover:text-white transition-colors">
-              <Bell className="w-5 h-5" />
-            </button>
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-neon-red rounded-full flex items-center justify-center text-xs font-rajdhani font-bold text-white">
-              3
-            </span>
-          </div>
+          <AdminNotificationCenter />
 
           <div className="hidden md:flex items-center space-x-3 px-3 py-2 bg-space-700/50 rounded-lg">
             <div className="w-8 h-8 bg-neon-red/20 rounded-full flex items-center justify-center">

@@ -37,6 +37,7 @@ import TemplateManagement from './admin/pages/TemplateManagement';
 import LanguageManagement from './admin/pages/LanguageManagement';
 import UniverseManagement from './admin/pages/UniverseManagement';
 import UserCreation from './admin/pages/UserCreation';
+import ASettings from './admin/pages/ASettings';
 import AdminLayout from './admin/layout/AdminLayout';
 import { AdminProvider } from './admin/context/AdminContext';
 import { Rocket} from 'lucide-react';
@@ -143,7 +144,7 @@ function App() {
               <Route path="config/apis" element={<ExternalAPIs />} />
               <Route path="config/templates" element={<TemplateManagement />} />
               <Route path="config/languages" element={<LanguageManagement />} />
-              <Route path="config/*" element={<div>Configuración - En desarrollo</div>} />
+              <Route path="config" element={<ASettings />} />
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
             </Route>
             

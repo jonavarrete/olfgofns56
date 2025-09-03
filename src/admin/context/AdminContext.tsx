@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { AdminState, AdminUser, AdminStats } from '../../types/admin';
+import { AdminState, AdminUser, AdminStats, AdminNotification, AdminNotificationState } from '../../types/admin';
 
 interface AdminContextType {
   state: AdminState;
+  notifications: AdminNotificationState;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   selectUniverse: (universeId: string) => void;
@@ -36,6 +37,64 @@ const initialState: AdminState = {
   loading: false,
   error: null,
 };
+
+const initialNotificationState: AdminNotificationState = {
+  notifications: [],
+  unreadCount: 0,
+  loading: false,
+  lastUpdate: 0,
+};
+
+function notificationReducer(state: AdminNotificationState, action: AdminAction): AdminNotificationState {
+  switch (action.type) {
+    case 'ADD_NOTIFICATION':
+      const newNotifications = [action.payload, ...state.notifications].slice(0, 100); // Keep only last 100
+      return {
+        ...state,
+        notifications: newNotifications,
+        unreadCount: newNotifications.filter(n => !n.read).length,
+        lastUpdate: Date.now(),
+      };
+    case 'MARK_NOTIFICATION_READ':
+      const updatedNotifications = state.notifications.map(notification =>
+        notification.id === action.payload
+          ? { ...notification, read: true }
+          : notification
+      );
+      return {
+        ...state,
+        notifications: updatedNotifications,
+        unreadCount: updatedNotifications.filter(n => !n.read).length,
+      };
+    case 'MARK_ALL_NOTIFICATIONS_READ':
+      return {
+        ...state,
+        notifications: state.notifications.map(n => ({ ...n, read: true })),
+        unreadCount: 0,
+      };
+    case 'CLEAR_NOTIFICATIONS':
+      return {
+        ...state,
+        notifications: [],
+        unreadCount: 0,
+      };
+    case 'SET_NOTIFICATIONS':
+      return {
+        ...state,
+        notifications: action.payload,
+        unreadCount: action.payload.filter(n => !n.read).length,
+        loading: false,
+        lastUpdate: Date.now(),
+      };
+    case 'SET_NOTIFICATIONS_LOADING':
+      return {
+        ...state,
+        loading: action.payload,
+      };
+    default:
+      return state;
+  }
+}
 
 function adminReducer(state: AdminState, action: AdminAction): AdminState {
   switch (action.type) {
@@ -76,6 +135,7 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(adminReducer, initialState);
+  const [notifications, notificationDispatch] = useReducer(notificationReducer, initialNotificationState);
 
   const login = async (email: string, password: string) => {
     dispatch({ type: 'LOGIN_START' });
@@ -100,6 +160,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('galactic_empire_admin', JSON.stringify(admin));
         dispatch({ type: 'LOGIN_SUCCESS', payload: admin });
         await refreshStats();
+        await loadNotifications();
       } else {
         throw new Error('Credenciales de administrador inválidas');
       }
@@ -141,13 +202,139 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const addNotification = (notification: Omit<AdminNotification, 'id' | 'timestamp'>) => {
+    const newNotification: AdminNotification = {
+      ...notification,
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      timestamp: Date.now(),
+    };
+    notificationDispatch({ type: 'ADD_NOTIFICATION', payload: newNotification });
+  };
+
+  const markNotificationAsRead = (notificationId: string) => {
+    notificationDispatch({ type: 'MARK_NOTIFICATION_READ', payload: notificationId });
+  };
+
+  const markAllNotificationsAsRead = () => {
+    notificationDispatch({ type: 'MARK_ALL_NOTIFICATIONS_READ' });
+  };
+
+  const clearNotifications = () => {
+    notificationDispatch({ type: 'CLEAR_NOTIFICATIONS' });
+  };
+
+  const loadNotifications = async () => {
+    notificationDispatch({ type: 'SET_NOTIFICATIONS_LOADING', payload: true });
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Mock notifications data
+      const mockNotifications: AdminNotification[] = [
+        {
+          id: '1',
+          title: 'Actividad Sospechosa Detectada',
+          message: 'Usuario "SpaceHacker" reportado por uso de bots automatizados',
+          type: 'security',
+          priority: 'high',
+          timestamp: Date.now() - 300000, // 5 minutes ago
+          read: false,
+          actionRequired: true,
+          relatedId: 'player_2',
+          metadata: { violationType: 'cheating', autoDetected: true }
+        },
+        {
+          id: '2',
+          title: 'Nuevo Usuario Registrado',
+          message: 'GalacticNewbie se ha registrado en Galaxia Prima',
+          type: 'user_action',
+          priority: 'low',
+          timestamp: Date.now() - 600000, // 10 minutes ago
+          read: false,
+          actionRequired: false,
+          relatedId: 'player_new',
+          metadata: { universe: 'universe_1', registrationMethod: 'email' }
+        },
+        {
+          id: '3',
+          title: 'Carga del Sistema Alta',
+          message: 'La carga del CPU ha superado el 85% durante los últimos 10 minutos',
+          type: 'performance',
+          priority: 'medium',
+          timestamp: Date.now() - 900000, // 15 minutes ago
+          read: false,
+          actionRequired: true,
+          metadata: { cpuLoad: 87.3, duration: 10 }
+        },
+        {
+          id: '4',
+          title: 'Backup Completado',
+          message: 'Backup automático de la base de datos completado exitosamente',
+          type: 'system',
+          priority: 'low',
+          timestamp: Date.now() - 1800000, // 30 minutes ago
+          read: true,
+          actionRequired: false,
+          metadata: { backupSize: '2.3GB', duration: '45s' }
+        },
+        {
+          id: '5',
+          title: 'Múltiples Intentos de Login Fallidos',
+          message: 'IP 192.168.1.200 ha realizado 25 intentos fallidos en 5 minutos',
+          type: 'security',
+          priority: 'critical',
+          timestamp: Date.now() - 2400000, // 40 minutes ago
+          read: false,
+          actionRequired: true,
+          relatedId: 'ip_192.168.1.200',
+          metadata: { attempts: 25, timespan: 5, ipAddress: '192.168.1.200' }
+        },
+        {
+          id: '6',
+          title: 'Violación Reportada',
+          message: 'Usuario reportado por acoso - Requiere investigación',
+          type: 'violation',
+          priority: 'medium',
+          timestamp: Date.now() - 3600000, // 1 hour ago
+          read: true,
+          actionRequired: true,
+          relatedId: 'violation_123',
+          metadata: { reportedBy: 'player_456', violationType: 'harassment' }
+        },
+        {
+          id: '7',
+          title: 'Mantenimiento Programado',
+          message: 'Recordatorio: Mantenimiento programado para mañana a las 02:00',
+          type: 'maintenance',
+          priority: 'medium',
+          timestamp: Date.now() - 7200000, // 2 hours ago
+          read: false,
+          actionRequired: false,
+          metadata: { scheduledTime: Date.now() + 86400000, duration: 4 }
+        }
+      ];
+      
+      notificationDispatch({ type: 'SET_NOTIFICATIONS', payload: mockNotifications });
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+      notificationDispatch({ type: 'SET_NOTIFICATIONS_LOADING', payload: false });
+    }
+  };
+
   return (
     <AdminContext.Provider value={{
       state,
+      notifications,
       login,
       logout,
       selectUniverse,
       refreshStats,
+      addNotification,
+      markNotificationAsRead,
+      markAllNotificationsAsRead,
+      clearNotifications,
+      loadNotifications,
     }}>
       {children}
     </AdminContext.Provider>

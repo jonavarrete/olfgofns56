@@ -41,6 +41,7 @@ const navigation = [
   { name: 'Simulador', href: '/simulator', icon: Calculator },
   { name: 'Misiones PvE', href: '/pve-missions', icon: Target },
   { name: 'Guía Galáctica', href: '/guide', icon: Book },
+  { name: 'Salón de la Fama', href: '/hall-of-fame', icon: Trophy },
   { name: 'Rankings', href: '/rankings', icon: Trophy },
   { name: 'Alianza', href: '/alliance', icon: Users },
   { name: 'Mensajes', href: '/messages', icon: MessageSquare },

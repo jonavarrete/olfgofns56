@@ -12,7 +12,8 @@ import {
   EyeOff,
   Star,
   Globe,
-  Zap
+  Zap,
+  Trophy
 } from 'lucide-react';
 
 export default function Login() {
@@ -320,6 +321,25 @@ export default function Login() {
                         <p className="text-lg font-orbitron font-bold text-neon-orange">∞</p>
                         <p className="text-xs text-gray-400">Aventuras</p>
                       </div>
+                    </div>
+                    
+                    {/* Hall of Fame Teaser */}
+                    <div className="pt-3 border-t border-neon-purple/20">
+                      <div className="flex items-center justify-center space-x-2 mb-2">
+                        <Trophy className="w-4 h-4 text-neon-orange" />
+                        <span className="text-xs font-rajdhani font-bold text-white">
+                          SALÓN DE LA FAMA
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-400 mb-2">
+                        Descubre los logros más épicos de la galaxia
+                      </p>
+                      <button
+                        onClick={() => navigate('/hall-of-fame')}
+                        className="text-xs text-neon-blue hover:text-neon-purple transition-colors font-rajdhani font-medium"
+                      >
+                        Ver Récords Legendarios →
+                      </button>
                     </div>
                   </div>
                 </div>

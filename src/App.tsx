@@ -25,6 +25,7 @@ import Trade from './pages/Trade';
 import Officers from './pages/Officers';
 import TechnologyTree from './pages/TechnologyTree';
 import ResourceCalculator from './pages/ResourceCalculator';
+import HallOfFame from './pages/HallOfFame';
 import { Rocket} from 'lucide-react';
 
 // Componente para proteger rutas que requieren autenticación
@@ -88,6 +89,7 @@ function GameWrapper() {
                 <Route path="/galaxy" element={<Galaxy />} />
                 <Route path="/trade" element={<Trade />} />
                 <Route path="/resource-calculator" element={<ResourceCalculator />} />
+                <Route path="/hall-of-fame" element={<HallOfFame />} />
                 <Route path="/technology-tree" element={<TechnologyTree />} />
                 <Route path="/simulator" element={<Simulator />} />
                 <Route path="/pve-missions" element={<PvEMissions />} />

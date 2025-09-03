@@ -265,6 +265,17 @@ export default function Lobby() {
                           <TrendingUp className="w-4 h-4" />
                           <span>Estadísticas Globales</span>
                         </button>
+                        
+                        <button
+                          onClick={() => {
+                            setShowUserMenu(false);
+                            navigate('/hall-of-fame');
+                          }}
+                          className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-space-600/50 rounded transition-colors"
+                        >
+                          <Trophy className="w-4 h-4" />
+                          <span>Salón de la Fama</span>
+                        </button>
                       </div>
                       
                       <div className="border-t border-space-600 mt-2 pt-2">

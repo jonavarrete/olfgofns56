@@ -324,6 +324,28 @@ export const mockUserBans: UserBan[] = [
     bannedBy: 'admin_1',
     bannedAt: Date.now() - 86400000 * 7,
     active: true
+  },
+  {
+    id: 'ub_2',
+    userId: 'player_4',
+    username: 'ToxicCommander',
+    reason: 'Acoso persistente a otros jugadores - Múltiples reportes confirmados',
+    type: 'temporary',
+    bannedBy: 'admin_2',
+    bannedAt: Date.now() - 86400000 * 2,
+    expiresAt: Date.now() + 86400000 * 5, // 5 more days
+    active: true
+  },
+  {
+    id: 'ub_3',
+    userId: 'player_5',
+    username: 'MultiAccountUser',
+    reason: 'Operación de múltiples cuentas para manipular rankings',
+    type: 'temporary',
+    bannedBy: 'admin_1',
+    bannedAt: Date.now() - 86400000 * 10,
+    expiresAt: Date.now() - 86400000 * 3, // Already expired
+    active: false
   }
 ];
 

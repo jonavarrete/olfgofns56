@@ -25,21 +25,6 @@ import Trade from './pages/Trade';
 import Officers from './pages/Officers';
 import TechnologyTree from './pages/TechnologyTree';
 import ResourceCalculator from './pages/ResourceCalculator';
-import AdminLogin from './admin/pages/AdminLogin';
-import AdminDashboard from './admin/pages/AdminDashboard';
-import UserManagement from './admin/pages/UserManagement';
-import ContentManagement from './admin/pages/ContentManagement';
-import SecurityManagement from './admin/pages/SecurityManagement';
-import CommunicationCenter from './admin/pages/CommunicationCenter';
-import PlatformConfig from './admin/pages/PlatformConfig';
-import ExternalAPIs from './admin/pages/ExternalAPIs';
-import TemplateManagement from './admin/pages/TemplateManagement';
-import LanguageManagement from './admin/pages/LanguageManagement';
-import UniverseManagement from './admin/pages/UniverseManagement';
-import UserCreation from './admin/pages/UserCreation';
-import ASettings from './admin/pages/ASettings';
-import AdminLayout from './admin/layout/AdminLayout';
-import { AdminProvider } from './admin/context/AdminContext';
 import { Rocket} from 'lucide-react';
 
 // Componente para proteger rutas que requieren autenticación
@@ -124,30 +109,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <AdminProvider>
-          <Routes>
-            {/* Admin Routes */}
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="users/create" element={<UserCreation />} />
-              <Route path="users/*" element={<UserManagement />} />
-              <Route path="content" element={<ContentManagement />} />
-              <Route path="content/*" element={<ContentManagement />} />
-              <Route path="content/universes" element={<UniverseManagement />} />
-              <Route path="security" element={<SecurityManagement />} />
-              <Route path="security/*" element={<SecurityManagement />} />
-              <Route path="communication" element={<CommunicationCenter />} />
-              <Route path="communication/*" element={<CommunicationCenter />} />
-              <Route path="config/platform" element={<PlatformConfig />} />
-              <Route path="config/apis" element={<ExternalAPIs />} />
-              <Route path="config/templates" element={<TemplateManagement />} />
-              <Route path="config/languages" element={<LanguageManagement />} />
-              <Route path="config" element={<ASettings />} />
-              <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            </Route>
-            
+          <Routes>            
             {/* Game Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/lobby" element={
@@ -161,7 +123,6 @@ function App() {
               </AuthGuard>
             } />
           </Routes>
-        </AdminProvider>
       </AuthProvider>
     </Router>
   );
